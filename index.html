@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" :class="darkMode ? 'dark' : ''" x-data="goingPolyglotApp()" x-init="initApp()">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌎</text></svg>">
+<head>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌎</text></svg>">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Going Polyglot - AI Language Learning</title>
@@ -677,7 +678,7 @@
                 ],
 
                 userStats: {
-                    it: { streak: 1, words: 24, minutes: 12, accuracy: 85, xp: 60, level: 'A1', correct: 10, total: 12, skills: { listening: 40, speaking: 20, reading: 60, writing: 30 } },
+                    it: { streak: 0, words: 0, minutes: 0, accuracy: 0, xp: 0, level: 'A1', correct: 0, total: 0, skills: { listening: 0, speaking: 0, reading: 0, writing: 0 } },
                     es: { streak: 0, words: 0, minutes: 0, accuracy: 0, xp: 0, level: 'A1', correct: 0, total: 0, skills: { listening: 0, speaking: 0, reading: 0, writing: 0 } },
                     fr: { streak: 0, words: 0, minutes: 0, accuracy: 0, xp: 0, level: 'A1', correct: 0, total: 0, skills: { listening: 0, speaking: 0, reading: 0, writing: 0 } }
                 },
@@ -1066,7 +1067,7 @@
                             data: {
                                 labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
                                 datasets: [{
-                                    data: [5, 10, 15, 8, 12, 20, mins],
+                                    data: [0, 0, 0, 0, 0, 0, mins],
                                     backgroundColor: '#3b82f6',
                                     borderRadius: 6
                                 }]
