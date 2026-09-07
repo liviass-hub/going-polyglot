@@ -182,19 +182,31 @@
                         <div class="inline-flex items-center space-x-2 bg-brand-500/10 border border-brand-500/20 px-3 py-1 rounded-full text-brand-600 dark:text-brand-400 text-xs font-bold">
                             <span x-text="getLangDetails(selectedLang).flag"></span>
                             <span x-text="getLangDetails(selectedLang).nativeName"></span>
-                            <span>• Nível <span x-text="userStats[selectedLang] ? userStats[selectedLang].level : 'A1'"></span></span>
+                            <span>• Livello <span x-text="userStats[selectedLang] ? userStats[selectedLang].level : 'A1'"></span></span>
                         </div>
                         <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white" x-text="t('welcome')"></h1>
                         
-                        <div class="max-w-md space-y-1.5 pt-2">
+                        <div class="max-w-lg space-y-2 pt-2">
                             <div class="flex justify-between text-xs font-bold">
                                 <span><span x-text="t('cefrLevel')"></span>: <strong class="text-brand-500" x-text="userStats[selectedLang] ? userStats[selectedLang].level : 'A1'"></strong></span>
-                                <span><span x-text="userStats[selectedLang] ? userStats[selectedLang].xp : 0"></span> / <span x-text="getNextLevelXP()"></span> XP</span>
+                                <span><span x-text="userStats[selectedLang] ? userStats[selectedLang].xp : 0"></span> / 2500 XP (A2)</span>
                             </div>
-                            <div class="w-full h-3 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-300 dark:border-slate-700/50">
+                            <div class="w-full h-3.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-300 dark:border-slate-700/50">
                                 <div class="h-full bg-gradient-to-r from-brand-600 via-indigo-500 to-emerald-400 transition-all duration-500" :style="'width: ' + getLevelProgressPercentage() + '%'"></div>
                             </div>
-                            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium" x-text="t('levelHint')"></p>
+                            
+                            <!-- CEFR Requirement Criteria Box -->
+                            <div class="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-xs space-y-2">
+                                <div class="flex items-center justify-between font-bold">
+                                    <span class="text-slate-600 dark:text-slate-300">Requisiti Certificazione A2:</span>
+                                    <span x-show="userStats[selectedLang] && userStats[selectedLang].examPassed" class="text-emerald-500 font-extrabold"><i class="fa-solid fa-circle-check"></i> Esame Superato!</span>
+                                    <span x-show="!userStats[selectedLang] || !userStats[selectedLang].examPassed" class="text-amber-500 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Esame Pendente</span>
+                                </div>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400" x-text="t('levelHint')"></p>
+                                <button @click="startProficiencyExam()" class="mt-1 w-full py-2 rounded-xl bg-gradient-to-r from-purple-600 to-brand-600 hover:from-purple-500 hover:to-brand-500 text-white font-bold text-xs transition shadow flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-award"></i> <span x-text="t('takeExamNow')"></span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -350,6 +362,18 @@
 
                                 <template x-if="msg.sender === 'user'">
                                     <div class="flex flex-col items-end space-y-2 max-w-[85%] ml-auto">
+                                        <!-- Correction Card if error detected -->
+                                        <template x-if="msg.correction">
+                                            <div class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-200 text-xs space-y-1 max-w-md w-full shadow-sm">
+                                                <div class="font-extrabold flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                                                    <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Correzione Grammaticale:</span>
+                                                </div>
+                                                <p>❌ Originale: <span class="line-through opacity-80" x-text="msg.correction.original"></span></p>
+                                                <p>✅ Suggerimento: <strong class="text-emerald-600 dark:text-emerald-400" x-text="msg.correction.suggested"></strong></p>
+                                                <p class="text-[11px] opacity-90 italic pt-1" x-text="msg.correction.explanation"></p>
+                                            </div>
+                                        </template>
+
                                         <div class="p-4 rounded-2xl bg-brand-600 text-white text-sm leading-relaxed shadow-sm">
                                             <p x-text="msg.text"></p>
                                         </div>
@@ -382,25 +406,25 @@
                         <span x-text="getLangDetails(selectedLang).flag"></span>
                         <span x-text="getLangDetails(selectedLang).nativeName"></span>
                     </div>
-                    <h2 class="text-3xl font-black text-slate-900 dark:text-white">Área de Prática por Habilidade</h2>
-                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Escolha o pilar que você quer praticar agora para ver os módulos temáticos.</p>
+                    <h2 class="text-3xl font-black text-slate-900 dark:text-white" x-text="t('practiceTitle')"></h2>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400" x-text="t('practiceSub')"></p>
                 </div>
 
-                <!-- 4 Modality Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- 5 Modality Cards (Including CEFR Exam) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
                     <!-- Reading -->
                     <button @click="selectCategory('reading')" class="glass-panel p-6 rounded-3xl text-left hover:border-emerald-500 transition group space-y-4 border flex flex-col justify-between">
                         <div class="space-y-4">
-                            <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-2xl group-hover:scale-110 transition shadow-sm">
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-xl group-hover:scale-110 transition shadow-sm">
                                 <i class="fa-solid fa-book-open"></i>
                             </div>
                             <div>
-                                <h3 class="text-xl font-extrabold text-slate-900 dark:text-white group-hover:text-emerald-500 transition">Leitura & Texto</h3>
-                                <p class="text-xs text-slate-500 mt-2 leading-relaxed">Textos longos e relatos para interpretação e análise reflexiva.</p>
+                                <h3 class="text-lg font-extrabold text-slate-900 dark:text-white group-hover:text-emerald-500 transition" x-text="t('readingTitle')"></h3>
+                                <p class="text-xs text-slate-500 mt-2 leading-relaxed" x-text="t('readingDesc')"></p>
                             </div>
                         </div>
                         <div class="pt-4 border-t border-slate-200 dark:border-slate-800 text-xs font-bold text-emerald-500 flex items-center justify-between">
-                            <span>Ver Temas</span>
+                            <span x-text="t('viewTopics')"></span>
                             <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
                         </div>
                     </button>
@@ -408,16 +432,16 @@
                     <!-- Writing (REAL ACTIVE TYPING) -->
                     <button @click="selectCategory('writing')" class="glass-panel p-6 rounded-3xl text-left hover:border-purple-500 transition group space-y-4 border flex flex-col justify-between">
                         <div class="space-y-4">
-                            <div class="w-14 h-14 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center text-2xl group-hover:scale-110 transition shadow-sm">
+                            <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center text-xl group-hover:scale-110 transition shadow-sm">
                                 <i class="fa-solid fa-keyboard"></i>
                             </div>
                             <div>
-                                <h3 class="text-xl font-extrabold text-slate-900 dark:text-white group-hover:text-purple-500 transition">Escrita Ativa</h3>
-                                <p class="text-xs text-slate-500 mt-2 leading-relaxed">Digite você mesmo a resposta sem opções de clique. Treino real de gramática.</p>
+                                <h3 class="text-lg font-extrabold text-slate-900 dark:text-white group-hover:text-purple-500 transition" x-text="t('writingTitle')"></h3>
+                                <p class="text-xs text-slate-500 mt-2 leading-relaxed" x-text="t('writingDesc')"></p>
                             </div>
                         </div>
                         <div class="pt-4 border-t border-slate-200 dark:border-slate-800 text-xs font-bold text-purple-500 flex items-center justify-between">
-                            <span>Ver Temas</span>
+                            <span x-text="t('viewTopics')"></span>
                             <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
                         </div>
                     </button>
@@ -425,16 +449,16 @@
                     <!-- Listening -->
                     <button @click="selectCategory('listening')" class="glass-panel p-6 rounded-3xl text-left hover:border-brand-500 transition group space-y-4 border flex flex-col justify-between">
                         <div class="space-y-4">
-                            <div class="w-14 h-14 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center text-2xl group-hover:scale-110 transition shadow-sm">
+                            <div class="w-12 h-12 rounded-2xl bg-brand-500/10 text-brand-500 flex items-center justify-center text-xl group-hover:scale-110 transition shadow-sm">
                                 <i class="fa-solid fa-headphones"></i>
                             </div>
                             <div>
-                                <h3 class="text-xl font-extrabold text-slate-900 dark:text-white group-hover:text-brand-500 transition">Escuta & Áudio</h3>
-                                <p class="text-xs text-slate-500 mt-2 leading-relaxed">Diálogos nativos com áudio real para exercitar a compreensão auditiva.</p>
+                                <h3 class="text-lg font-extrabold text-slate-900 dark:text-white group-hover:text-brand-500 transition" x-text="t('listeningTitle')"></h3>
+                                <p class="text-xs text-slate-500 mt-2 leading-relaxed" x-text="t('listeningDesc')"></p>
                             </div>
                         </div>
                         <div class="pt-4 border-t border-slate-200 dark:border-slate-800 text-xs font-bold text-brand-500 flex items-center justify-between">
-                            <span>Ver Temas</span>
+                            <span x-text="t('viewTopics')"></span>
                             <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
                         </div>
                     </button>
@@ -442,28 +466,45 @@
                     <!-- Vocabulary -->
                     <button @click="selectCategory('vocabulary')" class="glass-panel p-6 rounded-3xl text-left hover:border-amber-500 transition group space-y-4 border flex flex-col justify-between">
                         <div class="space-y-4">
-                            <div class="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center text-2xl group-hover:scale-110 transition shadow-sm">
+                            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center text-xl group-hover:scale-110 transition shadow-sm">
                                 <i class="fa-solid fa-layer-group"></i>
                             </div>
                             <div>
-                                <h3 class="text-xl font-extrabold text-slate-900 dark:text-white group-hover:text-amber-500 transition">Vocabulário</h3>
-                                <p class="text-xs text-slate-500 mt-2 leading-relaxed">Palavras-chave, expressões do cotidiano e vocabulário temático.</p>
+                                <h3 class="text-lg font-extrabold text-slate-900 dark:text-white group-hover:text-amber-500 transition" x-text="t('vocabTitle')"></h3>
+                                <p class="text-xs text-slate-500 mt-2 leading-relaxed" x-text="t('vocabDesc')"></p>
                             </div>
                         </div>
                         <div class="pt-4 border-t border-slate-200 dark:border-slate-800 text-xs font-bold text-amber-500 flex items-center justify-between">
-                            <span>Ver Temas</span>
+                            <span x-text="t('viewTopics')"></span>
                             <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
+                        </div>
+                    </button>
+
+                    <!-- CEFR Exam Card -->
+                    <button @click="startProficiencyExam()" class="glass-panel p-6 rounded-3xl text-left hover:border-indigo-500 transition group space-y-4 border border-indigo-500/30 bg-indigo-500/5 flex flex-col justify-between">
+                        <div class="space-y-4">
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-500 flex items-center justify-center text-xl group-hover:scale-110 transition shadow-sm">
+                                <i class="fa-solid fa-award"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-extrabold text-slate-900 dark:text-white group-hover:text-indigo-500 transition" x-text="t('examTitle')"></h3>
+                                <p class="text-xs text-slate-500 mt-2 leading-relaxed" x-text="t('examDesc')"></p>
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t border-slate-200 dark:border-slate-800 text-xs font-bold text-indigo-500 flex items-center justify-between">
+                            <span>Sostieni l'Esame</span>
+                            <i class="fa-solid fa-play group-hover:translate-x-1 transition"></i>
                         </div>
                     </button>
                 </div>
             </div>
 
             <!-- STEP 2: SELECT THEMATIC MODULE INSIDE THE CHOSEN CATEGORY -->
-            <div x-show="selectedCategory && !selectedTopic && !activeExercise" class="space-y-6">
+            <div x-show="selectedCategory && selectedCategory !== 'exam' && !selectedTopic && !activeExercise" class="space-y-6">
                 <!-- Header with Back Button -->
                 <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
                     <button @click="selectedCategory = null" class="text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-left"></i> Voltar para Modalidades
+                        <i class="fa-solid fa-arrow-left"></i> <span x-text="t('backToModalities')"></span>
                     </button>
                     <div class="inline-flex items-center space-x-2 bg-brand-500/10 border border-brand-500/20 px-3 py-1 rounded-full text-brand-600 dark:text-brand-400 text-xs font-bold">
                         <span x-text="getLangDetails(selectedLang).flag"></span>
@@ -473,9 +514,9 @@
 
                 <div class="space-y-1">
                     <h2 class="text-2xl font-black text-slate-900 dark:text-white">
-                        Módulos Temáticos de <span class="text-brand-500" x-text="getCategoryTitle(selectedCategory)"></span>
+                        <span x-text="t('thematicModules')"></span> <span class="text-brand-500" x-text="getCategoryTitle(selectedCategory)"></span>
                     </h2>
-                    <p class="text-xs text-slate-500">Escolha o tema que mais te desperta interesse para começar a praticar:</p>
+                    <p class="text-xs text-slate-500" x-text="t('chooseTopicSub')"></p>
                 </div>
 
                 <!-- Expanded 8 Topic Cards Grid -->
@@ -487,7 +528,7 @@
                                 <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed" x-text="topic.desc"></p>
                             </div>
                             <div class="pt-3 border-t border-slate-200 dark:border-slate-800/60 flex items-center justify-between text-xs font-bold text-brand-600 dark:text-brand-400">
-                                <span>Iniciar Exercícios</span>
+                                <span x-text="t('startExercise')"></span>
                                 <i class="fa-solid fa-play text-xs group-hover:translate-x-1 transition"></i>
                             </div>
                         </div>
@@ -501,11 +542,11 @@
                 <!-- Exercise Header Controls -->
                 <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
                     <button @click="activeExercise = false; selectedTopic = null" class="text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-left"></i> Voltar aos Módulos
+                        <i class="fa-solid fa-arrow-left"></i> <span x-text="t('backToModules')"></span>
                     </button>
                     <div class="flex items-center space-x-3 text-xs font-bold">
-                        <span class="px-3 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400" x-text="selectedTopic ? selectedTopic.title : ''"></span>
-                        <span class="text-slate-500 dark:text-slate-400" x-text="'Questão ' + (currentQuestionIdx + 1) + ' / ' + currentQuestionBank.length"></span>
+                        <span class="px-3 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400" x-text="selectedTopic ? selectedTopic.title : getCategoryTitle(selectedCategory)"></span>
+                        <span class="text-slate-500 dark:text-slate-400" x-text="'Domanda ' + (currentQuestionIdx + 1) + ' / ' + currentQuestionBank.length"></span>
                     </div>
                 </div>
 
@@ -514,20 +555,20 @@
                     <div class="space-y-6">
                         
                         <!-- 🎧 LISTENING MODE -->
-                        <template x-if="selectedCategory === 'listening'">
+                        <template x-if="currentQuestionBank[currentQuestionIdx].audioText || currentQuestionBank[currentQuestionIdx].type === 'listening'">
                             <div class="p-6 bg-slate-50 dark:bg-slate-900/80 rounded-2xl border border-slate-200 dark:border-slate-800 text-center space-y-3">
-                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Clique no botão para ouvir o áudio nativo:</p>
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider" x-text="t('listenAudioPrompt')"></p>
                                 <button @click="speakText(currentQuestionBank[currentQuestionIdx].audioText, getLangDetails(selectedLang).langCode)" 
                                         class="px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs inline-flex items-center gap-2 shadow-lg transition">
-                                    <i class="fa-solid fa-play"></i> Reproduzir Áudio
+                                    <i class="fa-solid fa-play"></i> <span x-text="t('playAudio')"></span>
                                 </button>
                             </div>
                         </template>
 
                         <!-- 📖 READING MODE (TEXT PARAGRAPH) -->
-                        <template x-if="selectedCategory === 'reading'">
+                        <template x-if="currentQuestionBank[currentQuestionIdx].passage || currentQuestionBank[currentQuestionIdx].type === 'reading'">
                             <div class="space-y-2">
-                                <span class="text-xs font-bold uppercase tracking-wider text-emerald-500"><i class="fa-solid fa-book-open mr-1"></i> Texto para Leitura e Análise</span>
+                                <span class="text-xs font-bold uppercase tracking-wider text-emerald-500"><i class="fa-solid fa-book-open mr-1"></i> <span x-text="t('readingTextHeader')"></span></span>
                                 <div class="p-6 bg-slate-50 dark:bg-slate-900/90 rounded-2xl border border-slate-200 dark:border-slate-800 text-sm sm:text-base leading-relaxed text-slate-800 dark:text-slate-200 font-serif italic shadow-inner" 
                                      x-text="currentQuestionBank[currentQuestionIdx].passage">
                                 </div>
@@ -543,28 +584,28 @@
                         </div>
 
                         <!-- ✍️ WRITING MODE (REAL TEXT INPUT - TYPING ACTIVE) -->
-                        <template x-if="selectedCategory === 'writing'">
+                        <template x-if="currentQuestionBank[currentQuestionIdx].answer || selectedCategory === 'writing'">
                             <div class="space-y-4">
                                 <div class="space-y-2">
-                                    <label class="block text-xs font-bold text-slate-500 uppercase">Sua Resposta Escrita:</label>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase" x-text="t('yourWrittenAnswer')"></label>
                                     <input type="text" 
                                            x-model="userWrittenAnswer" 
                                            @keyup.enter="submitWritingAnswer()"
                                            :disabled="writingSubmitted"
-                                           placeholder="Digite a palavra ou frase exata aqui..." 
+                                           :placeholder="t('writingPlaceholder')" 
                                            class="w-full glass-input px-5 py-4 rounded-2xl text-base font-semibold focus:outline-none focus:border-purple-500 transition">
                                 </div>
                                 <button x-show="!writingSubmitted" 
                                         @click="submitWritingAnswer()" 
                                         :disabled="!userWrittenAnswer.trim()"
                                         class="px-6 py-3.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition shadow-md">
-                                    Verificar Minha Escrita <i class="fa-solid fa-check ml-1"></i>
+                                    <span x-text="t('verifyAnswer')"></span> <i class="fa-solid fa-check ml-1"></i>
                                 </button>
                             </div>
                         </template>
 
-                        <!-- 🔘 MULTIPLE CHOICE OPTIONS (FOR READING, LISTENING & VOCABULARY) -->
-                        <template x-if="selectedCategory !== 'writing'">
+                        <!-- 🔘 MULTIPLE CHOICE OPTIONS -->
+                        <template x-if="!currentQuestionBank[currentQuestionIdx].answer && currentQuestionBank[currentQuestionIdx].options">
                             <div class="space-y-3">
                                 <template x-for="(opt, idx) in currentQuestionBank[currentQuestionIdx].options" :key="idx">
                                     <button @click="submitAnswer(idx)" 
@@ -580,23 +621,23 @@
                         </template>
 
                         <!-- FEEDBACK BOX -->
-                        <div x-show="(selectedCategory === 'writing' && writingSubmitted) || (selectedCategory !== 'writing' && selectedOptionIdx !== null)" 
+                        <div x-show="(currentQuestionBank[currentQuestionIdx].answer && writingSubmitted) || (!currentQuestionBank[currentQuestionIdx].answer && selectedOptionIdx !== null)" 
                              class="p-5 rounded-2xl text-xs font-bold border transition space-y-3 shadow-sm"
                              :class="isCorrectAnswer ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'">
                             
                             <div class="flex items-center space-x-2 text-sm">
                                 <i :class="isCorrectAnswer ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-solid fa-triangle-exclamation text-rose-500'"></i>
-                                <span x-text="isCorrectAnswer ? '+15 XP! Resposta Perfeita!' : 'Ainda não está correto.'"></span>
+                                <span x-text="isCorrectAnswer ? t('correctFeedback') : t('incorrectFeedback')"></span>
                             </div>
 
-                            <template x-if="!isCorrectAnswer && selectedCategory === 'writing'">
+                            <template x-if="!isCorrectAnswer && currentQuestionBank[currentQuestionIdx].answer">
                                 <div>
-                                    <p class="text-slate-600 dark:text-slate-300">Resposta Esperada: <strong class="text-emerald-500" x-text="currentQuestionBank[currentQuestionIdx].answer"></strong></p>
+                                    <p class="text-slate-600 dark:text-slate-300"><span x-text="t('expectedAnswer')"></span> <strong class="text-emerald-500" x-text="currentQuestionBank[currentQuestionIdx].answer"></strong></p>
                                 </div>
                             </template>
 
                             <button @click="nextQuestion()" class="px-6 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-extrabold text-xs transition shadow hover:opacity-90">
-                                Próxima Questão <i class="fa-solid fa-arrow-right ml-1"></i>
+                                <span x-text="t('nextQuestion')"></span> <i class="fa-solid fa-arrow-right ml-1"></i>
                             </button>
                         </div>
 
@@ -608,11 +649,29 @@
                     <div class="w-16 h-16 rounded-3xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-3xl mx-auto">
                         <i class="fa-solid fa-trophy"></i>
                     </div>
-                    <h3 class="text-2xl font-black text-slate-900 dark:text-white">Módulo Concluído!</h3>
-                    <p class="text-xs text-slate-500">Parabéns! Você praticou habilidades reais no idioma e somou XP no seu progresso.</p>
-                    <button @click="activeExercise = false; selectedTopic = null" class="px-6 py-3 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition shadow-lg">
-                        Voltar para Módulos Temáticos
-                    </button>
+                    
+                    <template x-if="selectedCategory !== 'exam'">
+                        <div class="space-y-2">
+                            <h3 class="text-2xl font-black text-slate-900 dark:text-white" x-text="t('moduleCompleted')"></h3>
+                            <p class="text-xs text-slate-500" x-text="t('moduleCompletedSub')"></p>
+                        </div>
+                    </template>
+
+                    <template x-if="selectedCategory === 'exam'">
+                        <div class="space-y-2">
+                            <h3 class="text-2xl font-black text-slate-900 dark:text-white" x-text="examScorePercentage >= 80 ? t('examPassedTitle') : t('examFailedTitle')"></h3>
+                            <p class="text-xs text-slate-500">Punteggio ottenuto: <strong class="text-brand-500" x-text="examScorePercentage + '%'"></strong> (Minimo richiesto: 80%)</p>
+                        </div>
+                    </template>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                        <button @click="startMoreExercises()" class="px-6 py-3 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition shadow-lg">
+                            <i class="fa-solid fa-arrows-rotate mr-1"></i> <span x-text="t('loadMoreExercises')"></span>
+                        </button>
+                        <button @click="activeExercise = false; selectedTopic = null" class="px-6 py-3 rounded-2xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-800 dark:text-slate-100 text-xs font-bold transition">
+                            <span x-text="t('backToModalities')"></span>
+                        </button>
+                    </div>
                 </div>
 
             </div>
@@ -636,38 +695,97 @@
                 writingSubmitted: false,
                 isCorrectAnswer: false,
                 currentQuestionBank: [],
+                examScorePercentage: 0,
+                examCorrectCount: 0,
                 inputMessage: '',
 
                 i18n: {
                     it: {
-                        dashboard: "Dashboard", chat: "AI Chat", practice: "Pratica",
-                        days: "dias", words: "palavras", minutes: "minutos", correctRate: "precisão",
-                        streak: "Sequência Atual", wordsLearned: "Vocabulário", practicedTime: "Tempo Praticado", accuracy: "Aproveitamento",
-                        skillBreakdown: "Equilíbrio de Habilidades", skillBreakdownSub: "Desempenho por pilar",
-                        weeklyActivity: "Atividade Semanal", weeklyActivitySub: "Consistência diária",
-                        welcome: "Bentornato! 👋", cefrLevel: "Nível Quadro Europeu", levelHint: "Complete módulos de estudo para subir de nível!",
-                        filterDashboard: "Idioma Selecionado", selectPersona: "Cenário de Conversa", audio: "Ouvir Pronúncia",
-                        typeMessage: "Escreva em Italiano..."
+                        dashboard: "Pannello", chat: "Chat IA", practice: "Pratica",
+                        days: "giorni", words: "parole", minutes: "minuti", correctRate: "precisione",
+                        streak: "Sequenza Attuale", wordsLearned: "Vocabolario", practicedTime: "Tempo Praticato", accuracy: "Precisione",
+                        skillBreakdown: "Equilíbrio delle Abilità", skillBreakdownSub: "Valutazione per pilastro",
+                        weeklyActivity: "Attività Settimanale", weeklyActivitySub: "Costanza quotidiana",
+                        welcome: "Benvenuto! 👋", cefrLevel: "Livello Quadro Europeo",
+                        levelHint: "Supera l'Esame di Certificazione e accumula 2500 XP per sbloccare il livello A2!",
+                        filterDashboard: "Lingua Selezionata", selectPersona: "Scenario di Conversazione", audio: "Ascolta Pronuncia",
+                        typeMessage: "Scrivi in Italiano...",
+                        practiceTitle: "Area di Pratica per Abilità", practiceSub: "Scegli il pilastro su cui desideri allenarti per accedere ai moduli tematici.",
+                        readingTitle: "Lettura & Testi", readingDesc: "Testi complessi e racconti per l'interpretazione e la comprensione scritta.",
+                        writingTitle: "Scrittura Attiva", writingDesc: "Scrivi direttamente la risposta senza opzioni. Allenamento grammaticale intensivo.",
+                        listeningTitle: "Ascolto & Audio", listeningDesc: "Dialoghi con audio nativo reale per esercitare la comprensione uditiva.",
+                        vocabTitle: "Vocabolario & Lessico", vocabDesc: "Parole chiave, espressioni idiomatiche e terminologia tematica.",
+                        examTitle: "🎓 Esame CEFR A1/A2", examDesc: "Prova di certificazione generale con valutazione di tutte le 4 abilità linguistiche.",
+                        viewTopics: "Vedi Argomenti", backToModalities: "Torna alle Modalità", backToModules: "Torna ai Moduli",
+                        thematicModules: "Moduli Tematici di", chooseTopicSub: "Scegli l'argomento per iniziare l'esercitazione:",
+                        startExercise: "Inizia Esercizi", listenAudioPrompt: "Clicca per ascoltare l'audio madrelingua:", playAudio: "Riproduci Audio",
+                        readingTextHeader: "Testo per la Lettura e L'Analisi", yourWrittenAnswer: "La tua risposta scritta:",
+                        writingPlaceholder: "Scrivi la frase o il testo completo qui...", verifyAnswer: "Verifica Risposta",
+                        correctFeedback: "Risposta Perfetta! +15 XP", incorrectFeedback: "Non è corretto.", expectedAnswer: "Risposta Attesa:",
+                        nextQuestion: "Prossima Domanda", moduleCompleted: "Modulo Completato!",
+                        moduleCompletedSub: "Ottimo lavoro! Hai completato questo set di esercizi di immersione.",
+                        loadMoreExercises: "Carica Altri 20 Esercizi", examPassedTitle: "🎉 Esame CEFR Superato con Successo!",
+                        examFailedTitle: "❌ Esame Non Superato (Punteggio Minimo: 80%)",
+                        examRequirementNotice: "Requisiti Livello A2: 2500 XP + Esame CEFR (Min 80%)",
+                        examPassedBadge: "Certificato A2 Sbloccato", takeExamNow: "Sostieni l'Esame di Certificazione A2"
                     },
                     es: {
-                        dashboard: "Panel", chat: "IA Chat", practice: "Práctica",
+                        dashboard: "Panel", chat: "Chat IA", practice: "Práctica",
                         days: "días", words: "palabras", minutes: "minutos", correctRate: "precisión",
                         streak: "Racha Actual", wordsLearned: "Vocabulario", practicedTime: "Tiempo Practicado", accuracy: "Precisión",
                         skillBreakdown: "Equilibrio de Habilidades", skillBreakdownSub: "Evaluación por pilar",
-                        weeklyActivity: "Actividad Semanal", weeklyActivitySub: "Consistencia diaria",
-                        welcome: "¡Bienvenido! 👋", cefrLevel: "Nivel CEFR", levelHint: "¡Completa módulos para subir de nivel!",
-                        filterDashboard: "Idioma Seleccionado", selectPersona: "Seleccionar Escenario", audio: "Escuchar Pronunciación",
-                        typeMessage: "Escribe en Español..."
+                        weeklyActivity: "Actividad Semanal", weeklyActivitySub: "Constancia diaria",
+                        welcome: "¡Bienvenido! 👋", cefrLevel: "Nivel CEFR",
+                        levelHint: "¡Supera el Examen de Certificación y suma 2500 XP para desbloquear el nivel A2!",
+                        filterDashboard: "Idioma Seleccionado", selectPersona: "Escenario de Conversación", audio: "Escuchar Pronunciación",
+                        typeMessage: "Escribe en Español...",
+                        practiceTitle: "Área de Práctica por Habilidad", practiceSub: "Elige el pilar que deseas practicar para acceder a los módulos temáticos.",
+                        readingTitle: "Lectura y Textos", readingDesc: "Textos complejos y relatos para la interpretación y comprensión escrita.",
+                        writingTitle: "Escritura Activa", writingDesc: "Escribe directamente la respuesta sin opciones. Entrenamiento gramatical intensivo.",
+                        listeningTitle: "Escucha y Audio", listeningDesc: "Diálogos con audio nativo real para ejercitar la comprensión auditiva.",
+                        vocabTitle: "Vocabulario", vocabDesc: "Palabras clave, expresiones idiomáticas y terminología temática.",
+                        examTitle: "🎓 Examen CEFR A1/A2", examDesc: "Prueba de certificación general con evaluación de las 4 habilidades lingüísticas.",
+                        viewTopics: "Ver Temas", backToModalities: "Volver a Modalidades", backToModules: "Volver a Módulos",
+                        thematicModules: "Módulos Temáticos de", chooseTopicSub: "Elige el tema para comenzar los ejercicios:",
+                        startExercise: "Iniciar Ejercicios", listenAudioPrompt: "Haz clic para escuchar el audio nativo:", playAudio: "Reproducir Audio",
+                        readingTextHeader: "Texto de Lectura y Análisis", yourWrittenAnswer: "Tu respuesta escrita:",
+                        writingPlaceholder: "Escribe la frase o texto completo aquí...", verifyAnswer: "Verificar Respuesta",
+                        correctFeedback: "¡Respuesta Perfecta! +15 XP", incorrectFeedback: "Aún no es correcto.", expectedAnswer: "Respuesta Esperada:",
+                        nextQuestion: "Siguiente Pregunta", moduleCompleted: "¡Módulo Completado!",
+                        moduleCompletedSub: "¡Excelente trabajo! Has completado este set de ejercicios de inmersión.",
+                        loadMoreExercises: "Cargar Más Ejercicios", examPassedTitle: "🎉 ¡Examen CEFR Aprobado con Éxito!",
+                        examFailedTitle: "❌ Examen No Aprobado (Puntaje Mínimo: 80%)",
+                        examRequirementNotice: "Requisitos Nivel A2: 2500 XP + Examen CEFR (Mín 80%)",
+                        examPassedBadge: "Certificado A2 Desbloqueado", takeExamNow: "Rendir Examen de Certificación A2"
                     },
                     fr: {
-                        dashboard: "Tableau de Bord", chat: "IA Chat", practice: "Pratique",
+                        dashboard: "Tableau de Bord", chat: "Chat IA", practice: "Pratique",
                         days: "jours", words: "mots", minutes: "minutes", correctRate: "précision",
                         streak: "Série Actuelle", wordsLearned: "Vocabulaire", practicedTime: "Temps Pratiqué", accuracy: "Précision",
                         skillBreakdown: "Équilibre des Compétences", skillBreakdownSub: "Évaluation par pilier",
                         weeklyActivity: "Activité Hebdomadaire", weeklyActivitySub: "Régularité quotidienne",
-                        welcome: "Bienvenue! 👋", cefrLevel: "Niveau CECRL", levelHint: "Complétez des modules pour progresser!",
-                        filterDashboard: "Langue Sélectionnée", selectPersona: "Choisir un Scénario", audio: "Écouter Prononciation",
-                        typeMessage: "Écrivez en Français..."
+                        welcome: "Bienvenue! 👋", cefrLevel: "Niveau CECRL",
+                        levelHint: "Réussissez l'Examen de Certification et accumulez 2500 XP pour débloquer le niveau A2!",
+                        filterDashboard: "Langue Sélectionnée", selectPersona: "Scénario de Conversation", audio: "Écouter Prononciation",
+                        typeMessage: "Écrivez en Français...",
+                        practiceTitle: "Centre de Pratique par Compétence", practiceSub: "Choisissez le pilier que vous souhaitez pratiquer pour accéder aux modules.",
+                        readingTitle: "Lecture et Textes", readingDesc: "Textes complexes et récits pour l'interprétation et la compréhension écrite.",
+                        writingTitle: "Écriture Active", writingDesc: "Écrivez directement la réponse sans choix multiples. Entraînement grammatical.",
+                        listeningTitle: "Écoute et Audio", listeningDesc: "Dialogues avec audio natif réel pour exercer la compréhension orale.",
+                        vocabTitle: "Vocabulaire", vocabDesc: "Mots-clés, expressions idiomatiques et terminologie thématique.",
+                        examTitle: "🎓 Examen CECRL A1/A2", examDesc: "Épreuve de certification générale évaluant les 4 compétences linguistiques.",
+                        viewTopics: "Voir les Thèmes", backToModalities: "Retour aux Modalités", backToModules: "Retour aux Modules",
+                        thematicModules: "Modules Thématiques de", chooseTopicSub: "Choisissez le thème pour commencer les exercices:",
+                        startExercise: "Commencer les Exercices", listenAudioPrompt: "Cliquez pour écouter l'audio natif:", playAudio: "Jouer l'Audio",
+                        readingTextHeader: "Texte pour Lecture et Analyse", yourWrittenAnswer: "Votre réponse écrite:",
+                        writingPlaceholder: "Écrivez la phrase ou le texte complet ici...", verifyAnswer: "Vérifier la Réponse",
+                        correctFeedback: "Réponse Parfaite! +15 XP", incorrectFeedback: "Ce n'est pas encore correct.", expectedAnswer: "Réponse Attendue:",
+                        nextQuestion: "Question Suivante", moduleCompleted: "Module Terminé!",
+                        moduleCompletedSub: "Excellent travail! Vous avez terminé cette série d'exercices d'immersion.",
+                        loadMoreExercises: "Charger Plus d'Exercices", examPassedTitle: "🎉 Examen CECRL Réussi avec Succès!",
+                        examFailedTitle: "❌ Examen Non Réussi (Score Minimum: 80%)",
+                        examRequirementNotice: "Exigences Niveau A2: 2500 XP + Examen CECRL (Min 80%)",
+                        examPassedBadge: "Certificat A2 Débloqué", takeExamNow: "Passer l'Examen de Certification A2"
                     }
                 },
 
@@ -678,9 +796,9 @@
                 ],
 
                 userStats: {
-                    it: { streak: 0, words: 0, minutes: 0, accuracy: 0, xp: 0, level: 'A1', correct: 0, total: 0, skills: { listening: 0, speaking: 0, reading: 0, writing: 0 } },
-                    es: { streak: 0, words: 0, minutes: 0, accuracy: 0, xp: 0, level: 'A1', correct: 0, total: 0, skills: { listening: 0, speaking: 0, reading: 0, writing: 0 } },
-                    fr: { streak: 0, words: 0, minutes: 0, accuracy: 0, xp: 0, level: 'A1', correct: 0, total: 0, skills: { listening: 0, speaking: 0, reading: 0, writing: 0 } }
+                    it: { streak: 0, words: 0, minutes: 0, accuracy: 0, xp: 0, level: 'A1', correct: 0, total: 0, examPassed: false, skills: { listening: 0, speaking: 0, reading: 0, writing: 0 } },
+                    es: { streak: 0, words: 0, minutes: 0, accuracy: 0, xp: 0, level: 'A1', correct: 0, total: 0, examPassed: false, skills: { listening: 0, speaking: 0, reading: 0, writing: 0 } },
+                    fr: { streak: 0, words: 0, minutes: 0, accuracy: 0, xp: 0, level: 'A1', correct: 0, total: 0, examPassed: false, skills: { listening: 0, speaking: 0, reading: 0, writing: 0 } }
                 },
 
                 personas: {
@@ -696,7 +814,38 @@
                     ]
                 },
 
-                topicData: {"it": [{"id": "gastronomy", "title": "🍝 Gastronomia e Culinária", "desc": "Pratos típicos, receitas tradicionais, vocabulário de restaurantes e culinária regional.", "it": {"reading": [{"passage": "L'Italia è celebre per la sua straordinaria varietà culinaria, legata a tradizioni regionali secolari. In Emilia-Romagna la pasta fresca fatta a mano è considerata una vera arte, mentre in Campania la pizza napoletana e la mozzarella di bufala rappresentano l'essenza della tavola. Il vero segreto della cucina italiana non risiede in tecniche complesse, bensì nella qualità e nella freschezza degli ingredienti di stagione.", "question": "Qual è il fattore determinante per la qualità della cucina italiana secondo il testo?", "options": ["L'uso di ingredienti freschi e di alta qualità stagionale", "L'impiego esclusivo di tecniche molecolari avanzate", "La combinazione di spezie esotiche importate dall'estero"], "correct": 0}], "writing": [{"prompt": "Escreva a forma correta do verbo 'mangiare' (io) no presente do indicativo:", "answer": "mangio", "hint": "Dica: Io ______ (mangiare)"}, {"prompt": "Traduza para o italiano a frase: 'Eu gostaria de uma pizza, por favor.'", "answer": "Vorrei una pizza per favore", "accepted": ["vorrei una pizza per favore", "vorrei una pizza, per favore"], "hint": "Dica: Vorrei..."}], "listening": [{"audioText": "Buongiorno! Vorrei prenotare un tavolo per quattro persone stasera alle ore otto e mezza.", "question": "Per quante persone e per quale orario viene effettuata la prenotazione?", "options": ["Per quattro persone alle 20:30", "Per due persone alle 20:00", "Per quattro persone alle 19:30"], "correct": 0}], "vocabulary": [{"question": "Cosa significa la parola 'Cucina' in italiano?", "options": ["Cozinha / Culinária", "Quarto de dormir", "Banheiro"], "correct": 0}, {"question": "Come si dice 'Conta / Fatura' al ristorante?", "options": ["Il conto", "Il menu", "La ricetta"], "correct": 0}]}}, {"id": "travel", "title": "✈️ Viagens e Transportes", "desc": "Estação de trem, voos, check-in em hotéis, orientações turísticas e navegação em cidades.", "it": {"reading": [{"passage": "I treni ad alta velocità Frecciarossa collegano rapidamente i principali centri urbani italiani. Il tragitto tra Roma e Milano impiega poco più di tre ore. I passeggeri della prima classe possono usufruire di servizi esclusivi, come uno snack di benvenuto, quotidiani freschi al mattino e connessione Wi-Fi ad alta velocità gratuita durante tutto il viaggio.", "question": "Quali servizi aggiuntivi sono riservati ai passeggeri in prima classe?", "options": ["Snack di benvenuto, quotidiani e connessione Wi-Fi gratuita", "Pranzo completo di tre portate e cabina notte privata", "Sconto del 50% sull'acquisto del biglietto successivo"], "correct": 0}], "writing": [{"prompt": "Escreva a forma correta do verbo 'andare' (io) no presente do indicativo:", "answer": "vado", "hint": "Dica: Io ______ alla stazione."}, {"prompt": "Traduza para o italiano a frase: 'Onde fica a estação de trem?'", "answer": "Dov'è la stazione ferroviaria?", "accepted": ["dov'è la stazione ferroviaria?", "dove si trova la stazione?", "dove sta la stazione?"], "hint": "Dica: Dov'è la stazione..."}], "listening": [{"audioText": "Attenzione passeggeri, il treno regionale da Firenze arriverà al binario sette con dieci minuti di ritardo.", "question": "Da dove proviene il treno e su quale binario è previsto l'arrivo?", "options": ["Da Firenze al binario 7", "Da Milano al binario 5", "Da Roma al binario 7"], "correct": 0}], "vocabulary": [{"question": "Cosa significa 'Binario' in una stazione ferroviaria?", "options": ["Plataforma / Trilho", "Bilhete de embarque", "Mala de viagem"], "correct": 0}]}}, {"id": "culture", "title": "🎭 Arte, Cultura e História", "desc": "Museus renomados, monumentos históricos, arquitetura renascentista e patrimônio mundial.", "it": {"reading": [{"passage": "La Galleria degli Uffizi a Firenze conserva una delle collezioni pittoriche più prestigiose al mondo. Tra i capolavori rinascimentali più celebri spicca 'La nascita di Venere' di Sandro Botticelli. A causa dell'elevato afflusso turistico durante tutto l'anno, la direzione del museo consiglia vivamente di prenotare i biglietti d'ingresso online prima di arrivare.", "question": "Cosa raccomanda il museo per evitare lunghe attese alla biglietteria?", "options": ["Prenotare i biglietti d'ingresso online in anticipo", "Visitare la galleria esclusivamente negli orari notturni", "Presentarsi senza prenotazione subito dopo l'orario di chiusura"], "correct": 0}], "writing": [{"prompt": "Escreva o plural da palavra 'il libro' em italiano:", "answer": "i libri", "hint": "Dica: O artigo 'il' muda para 'i' e 'libro' para 'libri'."}], "listening": [{"audioText": "Il Colosseo fu costruito a Roma nel primo secolo dopo Cristo e poteva contenere oltre cinquantamila spettatori.", "question": "In quale epoca fu costruito il Colosseo e quanta capienza aveva?", "options": ["Primo secolo d.C. e oltre 50.000 spettatori", "Quindicesimo secolo e circa 10.000 spettatori", "Ottocento e 100.000 spettatori"], "correct": 0}], "vocabulary": [{"question": "Quale parola significa 'Quadro / Pintura' in italiano?", "options": ["Il quadro", "La scultura", "L'architettura"], "correct": 0}]}}, {"id": "business", "title": "💼 Trabalho e Negócios", "desc": "Reuniões corporativas, vocabulário de escritório, e-mails formais e networking profissional.", "it": {"reading": [{"passage": "Nel mondo del lavoro italiano, la puntualità agli appuntamenti formali è fondamentale. Durante i primi incontri aziendali si usa dare del 'Lei' in segno di rispetto verso i superiori e i nuovi partner commerciali. È prassi consolidata inviare una breve e-mail di ringraziamento e riepilogo al termine di una riunione d'affari.", "question": "Quale forma di cortesia si utilizza negli incontri di lavoro formali?", "options": ["Si utilizza la forma di cortesia 'Lei'", "Si usa subito l'informale 'Tu'", "Non si usa alcuna forma di saluto"], "correct": 0}], "writing": [{"prompt": "Escreva a tradução de 'Atenciosamente' para e-mails formal em italiano:", "answer": "Cordiali saluti", "accepted": ["cordiali saluti", "distinti saluti"], "hint": "Dica: Cordiali ______"}], "listening": [{"audioText": "La riunione con il direttore commerciale è posticipata alle ore quindici nella sala conferenze due.", "question": "A che ora e dove si terrà la riunione posticipata?", "options": ["Alle ore 15:00 nella sala conferenze 2", "Alle ore 10:00 nell'ufficio principale", "Domani mattina al bar di fronte"], "correct": 0}], "vocabulary": [{"question": "Come si dice 'Empresa / Companhia' in italiano?", "options": ["L'azienda", "L'ufficio", "Il negozio"], "correct": 0}]}}, {"id": "daily_life", "title": "🏠 Vida Cotidiana e Rotina", "desc": "Atividades diárias, compras no supermercado, família e momentos de lazer.", "it": {"reading": [{"passage": "La routine di molti italiani inizia con la colazione al bar della zona, dove si consuma un caffè espresso veloce e una brioche fresca. Nel tardo pomeriggio, prima di cena, è abitudine diffusa incontrarsi per l'aperitivo, accompagnato da stuzzichini e conversazioni rilassate tra amici.", "question": "Quale momento sociale è tipico del tardo pomeriggio italiano?", "options": ["L'aperitivo con stuzzichini tra amici", "Il pranzo formale di tre ore", "La colazione al bar di quartiere"], "correct": 0}], "writing": [{"prompt": "Escreva a forma correta do verbo 'svegliarsi' (io) no presente: 'Io mi ______ alle sette.'", "answer": "sveglio", "hint": "Dica: Io mi sveglio..."}], "listening": [{"audioText": "Oggi devo andare al supermercato per comprare il latte, le uova e il pane fresco.", "question": "Cosa deve comprare la persona al supermercato?", "options": ["Latte, uova e pane fresco", "Carne, pasta e pomodori", "Frutta e succhi di frutta"], "correct": 0}], "vocabulary": [{"question": "Come si dice 'Supermercado' in italiano?", "options": ["Il supermercato", "Il mercato", "La farmacia"], "correct": 0}]}}, {"id": "technology", "title": "📱 Tecnologia e Mídia", "desc": "Internet, redes sociais, inteligência artificial, dispositivos e era digital.", "it": {"reading": [{"passage": "L'uso degli smartphone e dei social media ha trasformato radicalmente la comunicazione quotidiana. Oltre l'ottanta per cento della popolazione italiana utilizza internet quotidianamente per lavorare, studiare o effettuare acquisti online. Tuttavia, cresce il dibattito sulla necessità di proteggere la privacy dei dati personali.", "question": "Quale preoccupazione emerge dall'uso diffuso della tecnologia?", "options": ["La protezione della privacy e dei dati personali", "L'aumento eccessivo del costo dell'elettricità", "La scomparsa definitiva dei computer fissi"], "correct": 0}], "writing": [{"prompt": "Traduza para o italiano a palavra 'Computador':", "answer": "computer", "accepted": ["il computer", "computer"], "hint": "Dica: Em italiano usa-se a palavra 'computer'."}], "listening": [{"audioText": "Per favore, mi invii il documento in formato PDF tramite e-mail entro stasera.", "question": "In quale formato e come deve essere inviato il documento?", "options": ["In formato PDF tramite e-mail", "Stampato su carta via posta tradizionale", "Come messaggio vocale al cellulare"], "correct": 0}], "vocabulary": [{"question": "Cosa significa 'Scaricare' in ambito informatico?", "options": ["Fazer download / Baixar arquivo", "Enviar um e-mail", "Desligar o monitor"], "correct": 0}]}}, {"id": "sports", "title": "⚽ Esportes e Lazer", "desc": "Futebol, esportes olímpicos, ciclismo, hobbies e atividades ao ar livre.", "it": {"reading": [{"passage": "Il calcio è indubbiamente lo sport più seguito in Italia, vissuto con immensa passione da milioni di tifosi ogni fine settimana. Oltre al calcio, il ciclismo vanta una grande tradizione grazie allo storico Giro d'Italia, una gara a tappe che attraversa paesaggi mozzafiato da nord a sud della penisola.", "question": "Quale competizione ciclistica storica è citata nel testo?", "options": ["Il Giro d'Italia", "Il Tour de France", "La Vuelta a España"], "correct": 0}], "writing": [{"prompt": "Escreva a forma correta del verbo 'giocare' (io) no presente: 'Io ______ a calcio.'", "answer": "gioco", "hint": "Dica: Io gioco..."}], "listening": [{"audioText": "La partita di stasera inizierà alle ore venti e quarantacinque allo stadio principale.", "question": "A che ora inizia la partita allo stadio?", "options": ["Alle ore 20:45", "Alle ore 21:00", "Alle ore 18:30"], "correct": 0}], "vocabulary": [{"question": "Come si dice 'Estádio' in italiano?", "options": ["Lo stadio", "Il campo", "La palestra"], "correct": 0}]}}, {"id": "nature", "title": "🌿 Natureza e Meio Ambiente", "desc": "Sustentabilidade, paisagens naturais, clima, fauna, flora e preservação.", "it": {"reading": [{"passage": "L'Italia offre una varietà paesaggistica straordinaria, che spazia dalle vette alpine innevate alle coste cristalline del Mediterraneo. Molti parchi nazionali proteggono specie animali a rischio, come l'orso bruno marsicano e il lupo appenninico, promuovendo un turismo sostenibile e rispettoso dell'ambiente.", "question": "Quali animali protetti nei parchi nazionali sono menzionati?", "options": ["L'orso bruno marsicano e il lupo appenninico", "L'aquila reale e la volpe rossa", "Il delfino e la tartaruga marina"], "correct": 0}], "writing": [{"prompt": "Traduza para o italiano a palavra 'Árvore':", "answer": "albero", "accepted": ["l'albero", "albero"], "hint": "Dica: Com o artigo fica 'L'albero'."}], "listening": [{"audioText": "Domani il tempo sarà soleggiato su tutta la costa, con temperature piacevoli intorno ai venticinque gradi.", "question": "Che tempo farà domani e quali temperature sono previste?", "options": ["Tempo soleggiato e circa 25 gradi", "Pioggia abbondante e 10 gradi", "Neve in pianura e 0 gradi"], "correct": 0}], "vocabulary": [{"question": "Cosa significa 'Montagna' in italiano?", "options": ["Montanha", "Praia", "Floresta"], "correct": 0}]}}], "es": [{"id": "gastronomy", "title": "🥘 Gastronomía y Cultura Culinaria", "desc": "Tapas, platillos tradicionales, pedir en restaurantes y costumbres hispanas.", "it": {"reading": [{"passage": "Las tapas son una tradición culinaria fundamental en España. No se trata solo de la comida, sino de compartir raciones en un ambiente festivo con amigos. Entre las más representativas se encuentran la tortilla de patatas y las croquetas de jamón.", "question": "¿En qué consiste la costumbre de 'ir de tapas'?", "options": ["Compartir pequeñas raciones con amigos de bar en bar", "Cenar solo en casa temprano", "Comprar comida rápida en la calle"], "correct": 0}], "writing": [{"prompt": "Escriba la forma correcta del verbo 'comer' (yo) en presente:", "answer": "como", "hint": "Pista: Yo ______ una manzana."}], "listening": [{"audioText": "Buenas tardes, ¿nos trae la carta de postres y dos cafés con leche, por favor?", "question": "¿Qué pide el cliente?", "options": ["La carta de postres y dos cafés con leche", "La cuenta final solamente", "Dos cervezas frías"], "correct": 0}], "vocabulary": [{"question": "¿Cómo se dice 'Garçom' en español?", "options": ["El camarero", "El cocinero", "El dueño"], "correct": 0}]}}, {"id": "travel", "title": "✈️ Viajes y Transportes", "desc": "Aeropuertos, reservas de hotel, direcciones e itinerarios en español.", "it": {"reading": [{"passage": "El metro de Madrid es una red de transporte subterráneo sumamente eficiente. Con más de 300 estaciones, conecta el aeropuerto de Barajas con el centro de la ciudad en menos de media hora.", "question": "¿Qué ventaja ofrece el metro de Madrid según el texto?", "options": ["Conecta el aeropuerto con el centro rápidamente", "Es gratuito para todos los usuarios", "Funciona solo durante los fines de semana"], "correct": 0}], "writing": [{"prompt": "Escriba la forma correcta del verbo 'viajar' (nosotros) en presente:", "answer": "viajamos", "hint": "Pista: Nosotros ______ a España."}], "listening": [{"audioText": "El vuelo con destino a Barcelona sale por la puerta B12.", "question": "¿Por cuál puerta sale el vuelo a Barcelona?", "options": ["Puerta B12", "Puerta A10", "Puerta C15"], "correct": 0}], "vocabulary": [{"question": "¿Qué significa la palabra 'Equipaje'?", "options": ["Bagagem / Malas", "Passagem aérea", "Bilhete de ônibus"], "correct": 0}]}}, {"id": "culture", "title": "🎭 Arte, Cultura y Tradiciones", "desc": "Museos del Prado, flamenco, literatura hispana y patrimonio cultural.", "it": {"reading": [{"passage": "El Museo del Prado en Madrid alberga obras maestras de pintores como Velázquez, Goya y El Greco. Su cuadro más famoso, 'Las Meninas', atrae a millones de visitantes de todo el mundo cada año.", "question": "¿Cuál es una de las obras pictóricas más famosas del Museo del Prado?", "options": ["Las Meninas de Velázquez", "La Guernica de Picasso", "La Mona Lisa"], "correct": 0}], "writing": [{"prompt": "Escriba la traducción de 'Museu' en español:", "answer": "El museo", "accepted": ["el museo", "museo"], "hint": "Pista: El ______"}], "listening": [{"audioText": "El espectáculo de flamenco comenzará a las nueve de la noche en el tablao central.", "question": "¿A qué hora empieza el espectáculo de flamenco?", "options": ["A las 21:00 (nueve de la noche)", "A las 18:00 (seis de la tarde)", "A las 23:00"], "correct": 0}], "vocabulary": [{"question": "¿Qué significa la palabra 'Cuadro'?", "options": ["Pintura / Quadro de arte", "Escultura de piedra", "Música de guitarra"], "correct": 0}]}}, {"id": "business", "title": "💼 Negocios y Trabajo", "desc": "Entrevistas laborales, correos formales y reuniones de negocios.", "it": {"reading": [{"passage": "En las reuniones de negocios en América Latina y España, construir una relación personal de confianza es tan importante como los aspectos técnicos del acuerdo.", "question": "¿Qué aspecto es fundamental en las reuniones de negocios hispanas?", "options": ["Construir una relación personal de confianza", "Firmar el contrato en los primeros cinco minutos", "Evitar cualquier conversación informal"], "correct": 0}], "writing": [{"prompt": "Traduzca 'Atenciosamente' para e-mails en español:", "answer": "Atentamente", "accepted": ["atentamente", "saludos cordiales"], "hint": "Pista: Atenta..."}], "listening": [{"audioText": "Por favor, confirme su asistencia a la reunión antes de las cinco de la tarde.", "question": "¿Qué debe confirmar el interlocutor?", "options": ["Su asistencia a la reunión antes de las 17:00", "Su número de teléfono comercial", "Su reserva de hotel"], "correct": 0}], "vocabulary": [{"question": "¿Cómo se dice 'Escritório' en español?", "options": ["La oficina", "El taller", "El almacén"], "correct": 0}]}}, {"id": "daily_life", "title": "🏠 Vida Cotidiana y Rutina", "desc": "Hábitos diarios, compras, familia y actividades del fin de semana.", "it": {"reading": [{"passage": "En España, el horario de las comidas es más tardío que en otros países europeos. El almuerzo suele servirse entre las dos y las tres de la tarde, mientras que la cena se disfruta a partir de las nueve de la noche.", "question": "¿A qué hora se suele cenar en España?", "options": ["A partir de las nueve de la noche", "A las seis de la tarde", "A mediodía"], "correct": 0}], "writing": [{"prompt": "Escriba la forma correcta del verbo 'despertarse' (yo): 'Yo me ______ a las siete.'", "answer": "despierto", "hint": "Pista: Yo me despierto..."}], "listening": [{"audioText": "Mañana voy al supermercado a comprar fruta fresca y pan.", "question": "¿A dónde va mañana la persona?", "options": ["Al supermercado", "A la farmacia", "Al banco"], "correct": 0}], "vocabulary": [{"question": "¿Qué significa 'Desayuno'?", "options": ["Café da manhã", "Almoço", "Jantar"], "correct": 0}]}}, {"id": "technology", "title": "📱 Tecnología y Redes Sociales", "desc": "Innovación, telefonía móvil, internet y herramientas digitales.", "it": {"reading": [{"passage": "El uso de la inteligencia artificial y las aplicaciones móviles ha transformado la educación a distancia en los países hispanohablantes.", "question": "¿Qué impacto han tenido las aplicaciones móviles en la educación?", "options": ["Transformaron la educación a distancia", "Prohibieron los libros de texto", "Redujeron el número de estudiantes"], "correct": 0}], "writing": [{"prompt": "Traduzca la palabra 'Computador' al español:", "answer": "ordenador", "accepted": ["ordenador", "computadora", "el ordenador", "la computadora"], "hint": "Pista: En España se dice 'ordenador'."}], "listening": [{"audioText": "Descargue la aplicación gratuita para acceder a su itinerario de viaje.", "question": "¿Qué debe hacer el usuario para ver su itinerario?", "options": ["Descargar la aplicación gratuita", "Llamar por teléfono al agente", "Imprimir un documento de papel"], "correct": 0}], "vocabulary": [{"question": "¿Qué significa 'Descargar' en informática?", "options": ["Fazer download", "Desligar o celular", "Enviar foto"], "correct": 0}]}}, {"id": "sports", "title": "⚽ Deportes y Entretenimiento", "desc": "Fútbol, tenis, senderismo y eventos deportivos hispanos.", "it": {"reading": [{"passage": "El fútbol es el deporte rey en España y Latinoamérica. Partidos como 'El Clásico' entre el Real Madrid y el Barcelona son seguidos por cientos de millones de espectadores en todo el planeta.", "question": "¿Cómo se conoce al famoso partido entre el Real Madrid y el Barcelona?", "options": ["El Clásico", "El Derbi Final", "La Gran Copa"], "correct": 0}], "writing": [{"prompt": "Escriba la forma correcta del verbo 'jugar' (yo) en presente: 'Yo ______ al fútbol.'", "answer": "juego", "hint": "Pista: Yo juego..."}], "listening": [{"audioText": "El partido de fútbol comenzará puntualmente a las ocho de la noche.", "question": "¿A qué hora empieza el partido?", "options": ["A las 20:00 (ocho de la noche)", "A las 16:00", "A las 22:00"], "correct": 0}], "vocabulary": [{"question": "¿Cómo se dice 'Estádio' en español?", "options": ["El estadio", "El gimnasio", "La pista"], "correct": 0}]}}, {"id": "nature", "title": "🌿 Naturaleza y Medio Ambiente", "desc": "Parques nacionales, clima, biodiversidad y ecología.", "it": {"reading": [{"passage": "Costa Rica es mundialmente reconocida por sus esfuerzos en conservación ambiental y ecoturismo. Alberga más del 5% de la biodiversidad del planeta en su territorio.", "question": "¿Por qué es famosa Costa Rica a nivel mundial?", "options": ["Por su ecoturismo y gran biodiversidad", "Por sus grandes rascacielos urbanos", "Por sus pistas de esquí en la nieve"], "correct": 0}], "writing": [{"prompt": "Traduzca la palabra 'Árvore' al español:", "answer": "árbol", "accepted": ["el árbol", "árbol"], "hint": "Pista: El ______"}], "listening": [{"audioText": "El pronóstico del tiempo anuncia lluvia moderada durante la tarde.", "question": "¿Qué anuncia el pronóstico meteorológico?", "options": ["Lluvia moderada por la tarde", "Nieve fuerte en la playa", "Sol radiante todo el día"], "correct": 0}], "vocabulary": [{"question": "¿Qué significa 'Montaña' en español?", "options": ["Montanha", "Praia", "Floresta"], "correct": 0}]}}], "fr": [{"id": "gastronomy", "title": "🥐 Gastronomie et Art de Vivre", "desc": "Boulangeries, bistrots parisiens, fromages traditionnels et haute cuisine.", "it": {"reading": [{"passage": "La baguette française est inscrite au patrimoine culturel immatériel de l'UNESCO. Elle est fabriquée simplement avec de la farine, de l'eau, de la levure et du sel. Chaque matin, des millions de Français achètent leur baguette fraîche à la boulangerie de quartier.", "question": "Quels sont les quatre ingrédients de base de la baguette?", "options": ["Farine, eau, levure et sel", "Sucre, beurre, œufs et farine", "Lait, chocolat, farine et sel"], "correct": 0}], "writing": [{"prompt": "Écrivez la forme correcte du verbe 'manger' (je) au présent:", "answer": "mange", "hint": "Indice: Je ______ un croissant."}], "listening": [{"audioText": "Bonjour! Deux croissants et une baguette tradition, s'il vous plaît.", "question": "Qu'est-ce que le client commande?", "options": ["Deux croissants et une baguette tradition", "Un café au lait et une tarte aux pommes", "Trois gâteaux au chocolat"], "correct": 0}], "vocabulary": [{"question": "Que veut dire 'Boulangerie' en français?", "options": ["Padaria", "Açougue", "Farmácia"], "correct": 0}]}}, {"id": "travel", "title": "✈️ Voyages et Transports", "desc": "Déplacements à Paris, le TGV, réservation d'hôtel et visites des monuments.", "it": {"reading": [{"passage": "Le réseau du TGV permet de traverser la France à très haute vitesse. Le trajet entre Paris et Lyon ne prend que deux heures, offrant aux voyageurs un moyen rapide et confortable d'explorer le pays.", "question": "Combien de temps dure le trajet en TGV entre Paris et Lyon?", "options": ["Seulement deux heures", "Plus de cinq heures", "Toute la journée"], "correct": 0}], "writing": [{"prompt": "Écrivez la forme correcte du verbe 'aller' (je) au présent:", "answer": "vais", "hint": "Indice: Je ______ à Paris."}], "listening": [{"audioText": "Le train en provenance de Lyon arrivera voie numéro deux.", "question": "Sur quelle voie arrive le train de Lyon?", "options": ["Voie numéro 2", "Voie numéro 5", "Voie numéro 10"], "correct": 0}], "vocabulary": [{"question": "Que signifie le mot 'Billet'?", "options": ["Ingresso / Passagem", "Mala de viagem", "Hotel"], "correct": 0}]}}, {"id": "culture", "title": "🎭 Art, Culture et Patrimoine", "desc": "Le Louvre, histoire de France, littérature classique et monuments.", "it": {"reading": [{"passage": "Le musée du Louvre à Paris est le plus grand musée d'art du monde. Ancien palais royal, il abrite des milliers d'œuvres extraordinaires, dont la fameuse Joconde de Léonard de Vinci.", "question": "Quelle œuvre mythique est conservée au musée du Louvre?", "options": ["La Joconde de Léonard de Vinci", "La statue de la Liberté", "Les Nymphéas de Monet"], "correct": 0}], "writing": [{"prompt": "Traduisez en français le mot 'Livro':", "answer": "Le livre", "accepted": ["le livre", "livre"], "hint": "Indice: Le ______"}], "listening": [{"audioText": "La tour Eiffel a été construite en 1889 pour l'Exposition universelle de Paris.", "question": "En quelle année la tour Eiffel a-t-elle été construite?", "options": ["En 1889", "En 1900", "En 1789"], "correct": 0}], "vocabulary": [{"question": "Que signifie 'Tableau' en art?", "options": ["Quadro / Pintura", "Escultura de bronze", "Livro antigo"], "correct": 0}]}}, {"id": "business", "title": "💼 Affaires et Travail", "desc": "Mondialisation, réunions, courriels professionnels et réseau.", "it": {"reading": [{"passage": "Dans le milieu professionnel français, le vouvoiement est de rigueur avec les nouveaux clients et les supérieurs hiérarchiques.", "question": "Quelle forme de politesse utilise-t-on au travail en France?", "options": ["Le vouvoiement (vous)", "Le tutoiement immédiat (tu)", "Aucun pronom de politesse"], "correct": 0}], "writing": [{"prompt": "Traduisez 'Atenciosamente' pour un e-mail en français:", "answer": "Cordialement", "accepted": ["cordialement", "bien cordialement"], "hint": "Indice: Cordial..."}], "listening": [{"audioText": "La réunion est confirmée pour demain matin à dix heures précises.", "question": "À quelle heure aura lieu la réunion?", "options": ["Demain matin à 10:00", "Ce soir à 20:00", "Lundi prochain à 14:00"], "correct": 0}], "vocabulary": [{"question": "Que veut dire 'Bureau'?", "options": ["Escritório / Mesc", "Lja / Loja", "Fábrica"], "correct": 0}]}}, {"id": "daily_life", "title": "🏠 Vie Quotidienne et Routine", "desc": "Activités tous les jours, marché local, famille et loisirs.", "it": {"reading": [{"passage": "Les Français aiment faire leurs courses sur les marchés de plein air le dimanche matin pour acheter du fromage frais, des légumes de saison et des produits régionaux.", "question": "Où aiment aller les Français le dimanche matin?", "options": ["Sur les marchés de plein air", "Dans les grands centres commerciaux", "Au cinéma de quartier"], "correct": 0}], "writing": [{"prompt": "Écrivez la forme correcte du verbe 'se réveiller' (je): 'Je me ______ à sept heures.'", "answer": "réveille", "hint": "Indice: Je me réveille..."}], "listening": [{"audioText": "Aujourd'hui, je vais au supermarché acheter du lait et du fromage.", "question": "Qu'est-ce que la personne va acheter?", "options": ["Du lait et du fromage", "Du café et du sucre", "Des pommes de terre"], "correct": 0}], "vocabulary": [{"question": "Que signifie 'Petit-déjeuner'?", "options": ["Café da manhã", "Almoço", "Jantar"], "correct": 0}]}}, {"id": "technology", "title": "📱 Technologie et Média", "desc": "Services numériques, startups, médias et réseaux sociaux.", "it": {"reading": [{"passage": "La France investit massivement dans le secteur des hautes technologies et de l'intelligence artificielle pour soutenir la French Tech.", "question": "Dans quel secteur la France investit-elle fortement?", "options": ["Les hautes technologies et l'IA", "L'industrie charbonnière ancienne", "L'agriculture traditionnelle uniquement"], "correct": 0}], "writing": [{"prompt": "Traduisez 'Computador' en français:", "answer": "ordinateur", "accepted": ["l'ordinateur", "ordinateur"], "hint": "Indice: L'______"}], "listening": [{"audioText": "Veuillez télécharger le document joint à ce message électronique.", "question": "Que doit faire le destinataire?", "options": ["Télécharger le document joint", "Effacer le courriel immédiatement", "Imprimer la page d'accueil"], "correct": 0}], "vocabulary": [{"question": "Que signifie 'Télécharger'?", "options": ["Fazer download", "Desligar o computador", "Escrever e-mail"], "correct": 0}]}}, {"id": "sports", "title": "⚽ Sports et Loisirs", "desc": "Le Tour de France, football, tennis à Roland-Garros et sports d'hiver.", "it": {"reading": [{"passage": "Le Tour de France est la compétition cycliste la plus célèbre de la planète. Chaque été, des coureurs du monde entier s'affrontent sur les routes de France devant des millions de spectateurs enthousiastes.", "question": "Quelle grande compétition a lieu chaque été en France?", "options": ["Le Tour de France", "Les Jeux Olympiques d'hiver", "La Coupe du Monde de rugby"], "correct": 0}], "writing": [{"prompt": "Écrivez la forme du verbe 'jouer' (je): 'Je ______ au football.'", "answer": "joue", "hint": "Indice: Je joue..."}], "listening": [{"audioText": "Le match de finale commence à vingt heures quarante-cinq.", "question": "À quelle heure débute le match?", "options": ["À 20:45", "À 18:00", "À 22:00"], "correct": 0}], "vocabulary": [{"question": "Que signifie 'Stade'?", "options": ["Estádio", "Quadra de tênis", "Piscina"], "correct": 0}]}}, {"id": "nature", "title": "🌿 Nature et Environnement", "desc": "Les Alpes, le littoral, la biodiversité et l'écologie.", "it": {"reading": [{"passage": "Les parcs nationaux français, comme celui des Écrins ou du Mercantour, protègent des espèces rares telles que le bouquetin et l'aigle royal.", "question": "Quelles espèces rares sont protégées dans les parcs nationaux?", "options": ["Le bouquetin et l'aigle royal", "Le lion e le tigre", "Le dauphin géant"], "correct": 0}], "writing": [{"prompt": "Traduisez en français le mot 'Árvore':", "answer": "L'arbre", "accepted": ["l'arbre", "arbre"], "hint": "Indice: L'______"}], "listening": [{"audioText": "Demain, le soleil brillera sur toute la région méditerranéenne.", "question": "Quel temps fera-t-il demain sur la côte?", "options": ["Beau temps ensoleillé", "Orage violent et grêle", "Brouillard épais"], "correct": 0}], "vocabulary": [{"question": "Que veut dire 'Montagne'?", "options": ["Montanha", "Praia", "Oceano"], "correct": 0}]}}]},
+                topicData: {
+                    it: [
+                        { id: "gastronomy", title: "🍝 Gastronomia e Cucina", desc: "Piatti tipici, ricette tradizionali, vocabolario del ristorante e cucina regionale." },
+                        { id: "travel", title: "✈️ Viaggi e Trasporti", desc: "Stazione ferroviaria, voli, check-in negli hotel, indicazioni turistiche e trasporti urbani." },
+                        { id: "culture", title: "🎭 Arte, Cultura e Storia", desc: "Musei famosi, monumenti storici, architettura rinascimentale e patrimonio culturale." },
+                        { id: "business", title: "💼 Lavoro e Affari", desc: "Riunioni aziendali, vocabolario d'ufficio, e-mail formali e networking professionale." },
+                        { id: "daily_life", title: "🏠 Vita Quotidiana e Routine", desc: "Attività giornaliere, spesa al supermercato, famiglia e momenti di tempo libero." },
+                        { id: "technology", title: "📱 Tecnologia e Media", desc: "Internet, reti sociali, intelligenza artificiale, dispositivi e innovazione digitale." },
+                        { id: "sports", title: "⚽ Sport e Tempo Libero", desc: "Calcio, sport olimpici, ciclismo, passatempi e attività all'aperto." },
+                        { id: "nature", title: "🌿 Natura e Ambiente", desc: "Sostenibilità, paesaggi naturali, clima, fauna, flora e conservazione ecologica." }
+                    ],
+                    es: [
+                        { id: "gastronomy", title: "🥘 Gastronomía y Cocina", desc: "Platos típicos, recetas tradicionales, vocabulario de restaurante y cocina regional." },
+                        { id: "travel", title: "✈️ Viajes y Transportes", desc: "Estación de tren, vuelos, check-in en hoteles, indicaciones turísticas y transporte urbano." },
+                        { id: "culture", title: "🎭 Arte, Cultura e Historia", desc: "Museos famosos, monumentos históricos, arquitectura y patrimonio cultural." },
+                        { id: "business", title: "💼 Negocios y Trabajo", desc: "Reuniones corporativas, vocabulario de oficina, correos formales y redes profesionales." },
+                        { id: "daily_life", title: "🏠 Vida Cotidiana y Rutina", desc: "Actividades diarias, compras en el supermercado, familia y momentos de ocio." },
+                        { id: "technology", title: "📱 Tecnología y Medios", desc: "Internet, redes sociales, inteligencia artificial, dispositivos e innovación digital." },
+                        { id: "sports", title: "⚽ Deportes y Ocio", desc: "Fútbol, deportes olímpicos, ciclismo, pasatiempos y actividades al aire libre." },
+                        { id: "nature", title: "🌿 Naturaleza y Medio Ambiente", desc: "Sostenibilidad, paisajes naturales, clima, fauna, flora y conservación ecológica." }
+                    ],
+                    fr: [
+                        { id: "gastronomy", title: "🥐 Gastronomie et Cuisine", desc: "Plats typiques, recettes traditionnelles, vocabulaire de restaurant et cuisine régionale." },
+                        { id: "travel", title: "✈️ Voyages et Transports", desc: "Gare ferroviaire, vols, enregistrement à l'hôtel, orientations touristiques et transports." },
+                        { id: "culture", title: "🎭 Art, Culture et Histoire", desc: "Musées célèbres, monuments historiques, architecture et patrimoine culturel." },
+                        { id: "business", title: "💼 Affaires et Travail", desc: "Réunions d'entreprise, vocabulaire de bureau, courriels formels et réseau professionnel." },
+                        { id: "daily_life", title: "🏠 Vie Quotidienne et Routine", desc: "Activités quotidiennes, achats au supermarché, famille et moments de loisir." },
+                        { id: "technology", title: "📱 Technologie et Médias", desc: "Internet, réseaux sociaux, intelligence artificielle, appareils et innovation numérique." },
+                        { id: "sports", title: "⚽ Sports et Loisirs", desc: "Football, sports olympiques, cyclisme, passe-temps et activités en plein air." },
+                        { id: "nature", title: "🌿 Nature et Environnement", desc: "Développement durable, paysages naturels, climat, faune, flore et écologie." }
+                    ]
+                },
 
                 currentPersona: null,
                 messages: [],
@@ -767,13 +916,12 @@
                 },
 
                 getCategoryTitle(cat) {
-                    const titles = {
-                        reading: "Leitura & Texto",
-                        writing: "Escrita Ativa",
-                        listening: "Escuta & Áudio",
-                        vocabulary: "Vocabulário"
-                    };
-                    return titles[cat] || "Prática";
+                    if (cat === 'reading') return this.t('readingTitle');
+                    if (cat === 'writing') return this.t('writingTitle');
+                    if (cat === 'listening') return this.t('listeningTitle');
+                    if (cat === 'vocabulary') return this.t('vocabTitle');
+                    if (cat === 'exam') return this.t('examTitle');
+                    return "Pratica";
                 },
 
                 getTopicsForLang() {
@@ -786,11 +934,33 @@
                     this.selectedOptionIdx = null;
                     this.userWrittenAnswer = '';
                     this.writingSubmitted = false;
+                    this.examCorrectCount = 0;
 
-                    // Extract question list for this topic and category
-                    const categoryMap = topic.it || topic;
-                    this.currentQuestionBank = categoryMap[this.selectedCategory] || [];
+                    this.currentQuestionBank = this.generateDynamicQuestions(this.selectedLang, this.selectedCategory, topic ? topic.id : 'general', 20);
                     this.activeExercise = true;
+                },
+
+                startProficiencyExam() {
+                    this.activeTab = 'practice';
+                    this.selectedCategory = 'exam';
+                    this.selectedTopic = { id: 'exam', title: '🎓 Esame di Certificazione CEFR A1/A2' };
+                    this.currentQuestionIdx = 0;
+                    this.selectedOptionIdx = null;
+                    this.userWrittenAnswer = '';
+                    this.writingSubmitted = false;
+                    this.examCorrectCount = 0;
+
+                    this.currentQuestionBank = this.generateDynamicQuestions(this.selectedLang, 'exam', 'general', 10);
+                    this.activeExercise = true;
+                },
+
+                startMoreExercises() {
+                    this.currentQuestionIdx = 0;
+                    this.selectedOptionIdx = null;
+                    this.userWrittenAnswer = '';
+                    this.writingSubmitted = false;
+                    this.examCorrectCount = 0;
+                    this.currentQuestionBank = this.generateDynamicQuestions(this.selectedLang, this.selectedCategory, this.selectedTopic ? this.selectedTopic.id : 'general', 20);
                 },
 
                 getDisplayStats() {
@@ -803,18 +973,10 @@
                     };
                 },
 
-                getNextLevelXP() {
-                    const st = this.userStats[this.selectedLang];
-                    const level = st ? st.level : 'A1';
-                    if (level === 'A1') return 200;
-                    if (level === 'A2') return 500;
-                    return 1000;
-                },
-
                 getLevelProgressPercentage() {
                     const st = this.userStats[this.selectedLang];
                     const xp = st ? st.xp : 0;
-                    return Math.min(100, Math.round((xp / this.getNextLevelXP()) * 100));
+                    return Math.min(100, Math.round((xp / 2500) * 100));
                 },
 
                 addXP(points, isCorrect = true) {
@@ -823,7 +985,23 @@
                     st.xp += points;
                     st.minutes += 1;
                     st.total += 1;
-                    if (isCorrect) st.correct += 1;
+                    if (isCorrect) {
+                        st.correct += 1;
+                        st.words += 1;
+                        this.examCorrectCount++;
+                    }
+
+                    // Update pillar skill values
+                    if (this.selectedCategory === 'reading') st.skills.reading = Math.min(100, st.skills.reading + 5);
+                    if (this.selectedCategory === 'writing') st.skills.writing = Math.min(100, st.skills.writing + 5);
+                    if (this.selectedCategory === 'listening') st.skills.listening = Math.min(100, st.skills.listening + 5);
+                    if (this.selectedCategory === 'vocabulary') st.skills.speaking = Math.min(100, st.skills.speaking + 5);
+
+                    // Check level up condition (2500 XP + Exam Passed)
+                    if (st.xp >= 2500 && st.examPassed) {
+                        st.level = 'A2';
+                    }
+
                     this.updateCharts();
                 },
 
@@ -841,16 +1019,21 @@
                     const q = this.currentQuestionBank[this.currentQuestionIdx];
                     if (!q) return;
 
-                    const cleanUser = this.userWrittenAnswer.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-                    const cleanAns = q.answer.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-                    
-                    let accepted = [cleanAns];
-                    if (q.accepted) {
-                        accepted = accepted.concat(q.accepted.map(a => a.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")));
+                    const cleanUser = this.userWrittenAnswer.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").replace(/\s+/g, " ");
+
+                    if (q.minWords) {
+                        const wordCount = cleanUser.split(' ').filter(w => w.length > 0).length;
+                        this.isCorrectAnswer = (wordCount >= q.minWords);
+                    } else {
+                        const cleanAns = q.answer ? q.answer.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").replace(/\s+/g, " ") : "";
+                        let accepted = [cleanAns];
+                        if (q.accepted) {
+                            accepted = accepted.concat(q.accepted.map(a => a.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").replace(/\s+/g, " ")));
+                        }
+                        this.isCorrectAnswer = accepted.includes(cleanUser);
                     }
 
-                    this.isCorrectAnswer = accepted.includes(cleanUser);
-                    this.addXP(this.isCorrectAnswer ? 20 : 3, this.isCorrectAnswer);
+                    this.addXP(this.isCorrectAnswer ? 30 : 5, this.isCorrectAnswer);
                 },
 
                 getOptionStyle(idx) {
@@ -866,6 +1049,16 @@
                     this.userWrittenAnswer = '';
                     this.writingSubmitted = false;
                     this.currentQuestionIdx++;
+
+                    // If end of exam, compute exam score percentage
+                    if (this.currentQuestionIdx >= this.currentQuestionBank.length) {
+                        this.examScorePercentage = Math.round((this.examCorrectCount / this.currentQuestionBank.length) * 100);
+                        if (this.selectedCategory === 'exam' && this.examScorePercentage >= 80) {
+                            const st = this.userStats[this.selectedLang];
+                            st.examPassed = true;
+                            if (st.xp >= 2500) st.level = 'A2';
+                        }
+                    }
                 },
 
                 speakText(text, langCode) {
@@ -878,25 +1071,94 @@
                     }
                 },
 
+                generateDynamicQuestions(lang, category, topicId, count = 20) {
+                    const list = [];
+                    if (lang === 'it') {
+                        const writingIT = [
+                            { prompt: "Traduci la frase completa in italiano: 'Eu gostaria de reservar uma mesa para duas pessoas hoje à noite.'", answer: "Vorrei prenotare un tavolo per due persone stasera", accepted: ["Vorrei prenotare un tavolo per due persone questa sera", "Vorrei prenotare un tavolo per 2 persone stasera"], hint: "Usa 'Vorrei prenotare...'" },
+                            { prompt: "Traduci la frase completa in italiano: 'O trem para Roma parte da plataforma tre com dez minutos de atraso.'", answer: "Il treno per Roma parte dal binario tre con dieci minuti di ritardo", accepted: ["Il treno per Roma parte dal binario 3 con 10 minuti di ritardo"], hint: "Usa 'Il treno per Roma...'" },
+                            { prompt: "Traduci la frase completa in italiano: 'Onde fica a estação de metrô mais próxima deste hotel?'", answer: "Dove si trova la stazione della metropolitana piu vicina a questo hotel", accepted: ["Dove si trova la stazione della metropolitana piu vicina a questo albergo", "Dove e la stazione della metropolitana piu vicina a questo hotel"], hint: "Usa 'Dove si trova...'" },
+                            { prompt: "Traduci la frase completa in italiano: 'Eu tomo um cappuccino bem quente e como um cornetto todas as manhãs.'", answer: "Bevo un cappuccino molto caldo e mangio un cornetto ogni mattina", accepted: ["Prendo un cappuccino molto caldo e mangio un cornetto ogni mattina", "Io bevo un cappuccino caldo e mangio un cornetto tutte le mattine"], hint: "Usa 'Bevo un cappuccino...'" },
+                            { prompt: "Componi un testo completo in italiano (minimo 6 parole) descrivendo cosa desideri ordinare al bar:", answer: "Vorrei un caffe espresso e un cornetto al pistacchio per favore", minWords: 6, hint: "Esempio: 'Vorrei un caffè espresso e un cornetto al pistacchio per favore'" },
+                            { prompt: "Traduci la frase completa in italiano: 'A Galleria degli Uffizi abriga uma coleção straordinaria di arte rinascimentale.'", answer: "La Galleria degli Uffizi conserva una collezione straordinaria di arte rinascimentale", accepted: ["La Galleria degli Uffizi ospita una collezione straordinaria di arte rinascimentale"], hint: "Usa 'La Galleria degli Uffizi...'" },
+                            { prompt: "Componi un testo in italiano (minimo 8 parole) spiegando cosa fai nel fine settimana:", answer: "Nel fine settimana vado al parco e mangio la pizza con i miei amici", minWords: 8, hint: "Esempio: 'Nel fine settimana vado al mare e mangio una pizza con amici'" },
+                            { prompt: "Traduci la frase completa in italiano: 'Scusi, quanto costa il biglietto per la visita guidata al Colosseo?'", answer: "Scusi quanto costa il biglietto per la visita guidata al Colosseo", accepted: ["Scusi quanto costa il biglietto della visita guidata al Colosseo"], hint: "Usa 'Scusi, quanto costa...'" }
+                        ];
+
+                        const vocabIT = [
+                            { q: 'Cosa significa "Il conto" al ristorante?', opt: ['La ricevuta per il pagamento', 'La lista del menu', 'Il tavolo prenotato'], c: 0 },
+                            { q: 'Qual è il plurale corretto di "il gelato"?', opt: ['i gelati', 'le gelati', 'gli gelati'], c: 0 },
+                            { q: 'Come si dice "obrigado" in italiano?', opt: ['Grazie', 'Gracie', 'Gracias'], c: 0 },
+                            { q: 'Cosa significa "Binario" in stazione?', opt: ['La banchina per il treno', 'Il biglietto di viaggio', 'La valigia'], c: 0 },
+                            { q: 'Cosa significa "Colazione"?', opt: ['Il primo pasto del mattino', 'Il pranzo di mezzogiorno', 'La cena della sera'], c: 0 },
+                            { q: 'Quale parola indica la stanza per dormire?', opt: ['La camera da letto', 'La cucina', 'Il bagno'], c: 0 }
+                        ];
+
+                        const audioIT = [
+                            { audioText: 'Buongiorno! Vorrei ordinare un espresso e un cornetto alla crema, per favore.', q: 'Cosa desidera ordinare il cliente al bar?', opt: ['Un espresso e un cornetto alla crema', 'Un tè caldo e un tramezzino', 'Un cappuccino e una spremuta'], c: 0 },
+                            { audioText: 'Attenzione passeggeri: il treno per Milano Centrale parte dal binario tre.', q: 'Da quale binario parte il treno per Milano?', opt: ['Dal binario 3', 'Dal binario 5', 'Dal binario 1'], c: 0 },
+                            { audioText: 'La Galleria degli Uffizi apre tutte le mattine alle ore otto e trenta.', q: 'A che ora apre il museo?', opt: ['Alle 08:30', 'Alle 09:00', 'Alle 10:00'], c: 0 }
+                        ];
+
+                        const readingIT = [
+                            { passage: 'Il Caffè Roma si trova nel cuore del quartiere Trastevere. Ogni mattina accoglie clienti con caffè espresso e dolci artigianali fatti in casa.', q: 'Dove si trova il Caffè Roma e cosa offre?', opt: ['A Trastevere; offre caffè e dolci artigianali', 'A Firenze; offre pizza al taglio', 'A Milano; offre solo aperitivi'], c: 0 },
+                            { passage: 'I treni ad alta velocità Frecciarossa collegano Roma e Milano in poco più di tre ore, offrendo connessione Wi-Fi gratuita a bordo.', q: 'Quanto dura il viaggio in treno tra Roma e Milano?', opt: ['Poco più di 3 ore', 'Più di 6 ore', 'Exactamente 1 ora'], c: 0 }
+                        ];
+
+                        if (category === 'writing') writingIT.forEach(item => list.push(item));
+                        else if (category === 'vocabulary') vocabIT.forEach(item => list.push(item));
+                        else if (category === 'listening') audioIT.forEach(item => list.push(item));
+                        else if (category === 'reading') readingIT.forEach(item => list.push(item));
+                        else if (category === 'exam') {
+                            audioIT.forEach(item => list.push(item));
+                            readingIT.forEach(item => list.push(item));
+                            vocabIT.forEach(item => list.push(item));
+                            writingIT.slice(0, 4).forEach(item => list.push(item));
+                        } else {
+                            writingIT.slice(0, 4).forEach(item => list.push(item));
+                            vocabIT.slice(0, 5).forEach(item => list.push(item));
+                        }
+                    } else if (lang === 'es') {
+                        const writingES = [
+                            { prompt: "Traduce la frase completa al español: 'Me gustaría reservar una habitación doble para tres noches con desayuno incluido.'", answer: "Me gustaria reservar una habitacion doble para tres noches con desayuno incluido", accepted: ["Quisiera reservar una habitacion doble para tres noches con desayuno incluido"], hint: "Usa 'Me gustaría reservar...'" },
+                            { prompt: "Traduce la frase completa al español: 'El vuelo con destino a Madrid sale por la puerta B12 a las ocho de la mañana.'", answer: "El vuelo con destino a Madrid sale por la puerta B12 a las ocho de la mañana", accepted: ["El vuelo hacia Madrid sale por la puerta B12 a las ocho de la mañana"], hint: "Usa 'El vuelo con destino...'" },
+                            { prompt: "Escribe un texto completo en español (mínimo 6 palabras) describiendo lo que te gusta comer en el almuerzo:", answer: "Me gusta comer paella de mariscos y beber agua fresca", minWords: 6, hint: "Ejemplo: 'Me gusta comer paella de mariscos y ensalada'" },
+                            { prompt: "Traduce la frase completa al español: '¿Dónde está la oficina de turismo más cercana al centro histórico?'", answer: "Donde esta la oficina de turismo mas cercana al centro historico", accepted: ["Donde se encuentra la oficina de turismo mas cercana al centro historico"], hint: "Usa '¿Dónde está...'" }
+                        ];
+                        const vocabES = [
+                            { q: '¿Cómo se dice "Garçom" en español?', opt: ['El camarero', 'El cocinero', 'El dueño'], c: 0 },
+                            { q: '¿Qué significa "Equipaje"?', opt: ['Bagagem / Malas', 'Passagem aérea', 'Bilhete de ônibus'], c: 0 }
+                        ];
+                        if (category === 'writing') writingES.forEach(item => list.push(item));
+                        else vocabES.forEach(item => list.push(item));
+                    } else if (lang === 'fr') {
+                        const writingFR = [
+                            { prompt: "Traduisez la phrase complète en français: 'Je voudrais réserver une table pour deux personnes ce soir à vingt heures.'", answer: "Je voudrais reserver une table pour deux personnes ce soir a vingt heures", accepted: ["Je souhaite reserver une table pour deux personnes ce soir a vingt heures"], hint: "Utilisez 'Je voudrais réserver...'" },
+                            { prompt: "Traduisez la phrase complète en français: 'Le train pour Paris arrive en gare sur la voie numéro deux avec dix minutes de retard.'", answer: "Le train pour Paris arrive en gare sur la voie numero deux avec dix minutes de retard", accepted: ["Le train pour Paris arrive sur la voie deux avec dix minutes de retard"], hint: "Utilisez 'Le train pour Paris...'" },
+                            { prompt: "Écrivez un texte complet en français (minimum 6 mots) décrivant votre petit-déjeuner idéal:", answer: "Chaque matin je bois un cafe au lait et mange un croissant frais", minWords: 6, hint: "Exemple: 'Je bois un café et mange un croissant frais'" }
+                        ];
+                        const vocabFR = [
+                            { q: 'Que veut dire "Boulangerie" en français?', opt: ['Padaria', 'Açougue', 'Farmácia'], c: 0 }
+                        ];
+                        if (category === 'writing') writingFR.forEach(item => list.push(item));
+                        else vocabFR.forEach(item => list.push(item));
+                    }
+                    return list;
+                },
+
                 async sendMessage() {
                     if (!this.inputMessage.trim()) return;
                     const userText = this.inputMessage;
                     this.inputMessage = '';
 
-                    // Analyze input for grammar corrections & contextual reply
                     const { correction, reply } = this.processUserChat(userText);
 
-                    // Add user message with correction if present
                     const userMsgObj = { sender: 'user', text: userText };
-                    if (correction) {
-                        userMsgObj.correction = correction;
-                    }
+                    if (correction) userMsgObj.correction = correction;
                     this.messages.push(userMsgObj);
 
-                    // Scroll chat to bottom
                     this.scrollChatToBottom();
 
-                    // Simulate realistic typing delay for AI response
                     setTimeout(() => {
                         this.messages.push({
                             sender: 'ai',
@@ -920,100 +1182,44 @@
                     let correction = null;
                     let reply = "";
 
-                    // ================= 1. GRAMMAR CORRECTION DETECTOR =================
                     if (this.selectedLang === 'it') {
                         if (textLower.includes('capuccino')) {
                             correction = {
                                 original: rawText,
                                 suggested: rawText.replace(/capuccino/gi, 'cappuccino').replace(/ i /gi, ' e '),
-                                explanation: "Em italiano, 'cappuccino' escreve-se com duplo 'p' e duplo 'c' (cappuccino). Além disso, a conjunção 'e' (e) une palavras, enquanto 'i' é artigo plural."
+                                explanation: "In italiano, 'cappuccino' si scrive con doppia 'p' e doppia 'c' (cappuccino). Inoltre, la congiunzione 'e' unisce le parole."
                             };
-                        } else if (/\bi\b/.test(textLower) && (textLower.includes('vorrei') || textLower.includes('un'))) {
+                        } else if (/i/.test(textLower) && (textLower.includes('vorrei') || textLower.includes('un'))) {
                             correction = {
                                 original: rawText,
-                                suggested: rawText.replace(/\bi\b/gi, 'e'),
-                                explanation: "Para unir itens (ex: um cappuccino E um cornetto), usa-se a conjunção 'e', e não 'i'."
+                                suggested: rawText.replace(/i/gi, 'e'),
+                                explanation: "Per unire due elementi (es: un cappuccino E un cornetto) si usa la congiunzione 'e'."
                             };
                         } else if (textLower.includes('gracie') || textLower.includes('gracias')) {
                             correction = {
                                 original: rawText,
                                 suggested: rawText.replace(/gracie/gi, 'grazie').replace(/gracias/gi, 'grazie'),
-                                explanation: "Em italiano, 'obrigado' escreve-se 'grazie' (com 'z' e terminado em 'e')."
-                            };
-                        } else if (textLower.includes('bonjour') || textLower.includes('hola')) {
-                            correction = {
-                                original: rawText,
-                                suggested: "Ciao / Buongiorno",
-                                explanation: "Em italiano, use 'Ciao' (informal) ou 'Buongiorno' (bom dia formal)."
-                            };
-                        } else if (textLower.includes('como ') || textLower.includes('como se')) {
-                            correction = {
-                                original: rawText,
-                                suggested: rawText.replace(/como/gi, 'come'),
-                                explanation: "Em italiano, a palavra para 'como' é 'come'."
-                            };
-                        }
-                    } else if (this.selectedLang === 'es') {
-                        if (textLower.includes('obrigado') || textLower.includes('grazie')) {
-                            correction = {
-                                original: rawText,
-                                suggested: "Muchas gracias",
-                                explanation: "Em espanhol, 'obrigado' diz-se 'gracias' ou 'muchas gracias'."
-                            };
-                        }
-                    } else if (this.selectedLang === 'fr') {
-                        if (textLower.includes('obrigado') || textLower.includes('grazie')) {
-                            correction = {
-                                original: rawText,
-                                suggested: "Merci beaucoup",
-                                explanation: "Em francês, 'obrigado' diz-se 'merci'."
+                                explanation: "In italiano si scrive 'grazie' (con la 'z' e finale in 'e')."
                             };
                         }
                     }
 
-                    // ================= 2. CONTEXTUAL PERSONA DIALOGUE =================
                     const personaId = this.currentPersona ? this.currentPersona.id : '';
 
                     if (personaId === 'marco') {
-                        // Marco - Barista em Roma
-                        if (textLower.includes('cappuccino') || textLower.includes('capuccino') || textLower.includes('cornetto') || textLower.includes('caffe') || textLower.includes('espresso') || textLower.includes('vorrei') || textLower.includes('prendo')) {
+                        if (textLower.includes('cappuccino') || textLower.includes('capuccino') || textLower.includes('cornetto') || textLower.includes('caffe') || textLower.includes('espresso') || textLower.includes('vorrei')) {
                             reply = "Perfetto! Un delizioso cappuccino ben caldo e un cornetto al pistacchio per te. Te li porto subito al tavolo! Desideri anche un bicchiere d'acqua fresca?";
                         } else if (textLower.includes('conto') || textLower.includes('quanto') || textLower.includes('pagare')) {
-                            reply = "Certamente! Il totale per il cappuccino e il cornetto è di 4,50 euro. Puoi pagare in contanti o con la carta. Grazie mille e buona giornata a Roma!";
-                        } else if (textLower.includes('ciao') || textLower.includes('buongiorno') || textLower.includes('come va')) {
-                            reply = "Ciao! Tutto bene qui al bar, c'è una bellissima giornata a Trastevere! Benvenuto. Cosa posso prepararti di buono stamattina?";
-                        } else if (textLower.includes('acqua') || textLower.includes('succo') || textLower.includes('spremuta')) {
-                            reply = "Subito! Ecco una fresca spremuta d'arancia e un bicchiere d'acqua. Buon appetito! Se vuoi provare altro dal menu, chiedi pure.";
-                        } else if (textLower.includes('portugues') || textLower.includes('como se diz') || textLower.includes('ajuda') || textLower.includes('nao sei')) {
-                            reply = "Nessun problema! Ti aiuto io. Per ordinare al bar puoi dire: 'Vorrei un caffè, per favore' oppure 'Il conto, per favore'. Prova a dirmelo in italiano!";
-                        } else if (textLower.includes('okay') || textLower.includes('ok') || textLower.includes('grazie') || textLower.includes('va bene')) {
-                            reply = "Prego, figurati! È un piacere. Buona giornata e goditi la tua passeggiata per le vie di Roma!";
+                            reply = "Certamente! Il totale per il cappuccino e il cornetto è di 4,50 euro. Puoi pagare in contanti o con la carta. Grazie mille e buona giornata!";
                         } else {
-                            reply = "Ottimo! Al Caffè Roma abbiamo anche deliziosi panini freschi, tramezzini e dolci fatti in casa. Desideri ordinare qualcos'altro?";
+                            reply = "Ciao! Tutto bene qui al bar in Piazza Navona. Cosa posso prepararti di buono stamattina?";
                         }
                     } else if (personaId === 'giulia') {
-                        // Giulia - Guida a Firenze
-                        if (textLower.includes('uffizi') || textLower.includes('museo') || textLower.includes('arte') || textLower.includes('quadro')) {
-                            reply = "La Galleria degli Uffizi è straordinaria! Ti consiglio assolutamente la sala di Botticelli con 'La Nascita di Venere'. Hai già acquistato il biglietto d'ingresso?";
-                        } else if (textLower.includes('duomo') || textLower.includes('ponte vecchio') || textLower.includes('firenze')) {
-                            reply = "Firenze è una città fantastica! Possiamo passeggiare fino a Ponte Vecchio e poi salire sulla Cupola del Brunelleschi per una vista mozzafiato.";
-                        } else {
-                            reply = "Benvenuto a Firenze! Come tua guida turistica, posso consigliarti i migliori musei, monumenti e ristoranti tipici della città. Da dove vuoi iniziare?";
-                        }
+                        reply = "Benvenuto a Firenze! Posso consigliarti i migliori musei, come la Galleria degli Uffizi o la Cupola del Brunelleschi. Da dove vuoi iniziare?";
                     } else if (personaId === 'sofia') {
-                        // Sofia - Guía en Madrid
-                        if (textLower.includes('prado') || textLower.includes('museo') || textLower.includes('tapas') || textLower.includes('madrid')) {
-                            reply = "¡Excelente! En Madrid no puedes perderte el Museo del Prado y luego ir de tapas por la Plaza Mayor. ¿Te gustaría recomendaciones de lugares típicos?";
-                        } else {
-                            reply = "¡Hola! Qué alegría tenerte en Madrid. Estoy aquí para acompañarte y ayudarte a practicar tu español mientras recorremos la ciudad. ¿Qué te gustaría visitar?";
-                        }
+                        reply = "¡Hola! Qué alegría tenerte en Madrid. Podemos visitar el Museo del Prado o ir de tapas por la Plaza Mayor. ¿Qué te gustaría hacer?";
                     } else if (personaId === 'luc') {
-                        // Luc - Ami à Paris
-                        if (textLower.includes('louvre') || textLower.includes('tour eiffel') || textLower.includes('paris') || textLower.includes('croissant')) {
-                            reply = "Salut mon ami! Paris est magnifique en ce moment. On peut aller prendre un café au Marais et ensuite visiter la Tour Eiffel. Qu'en penses-tu?";
-                        } else {
-                            reply = "Salut! Je suis ravi de discuter avec toi. On peut parler de nos projets, de musique ou de voyages. De quoi as-tu envie de parler aujourd'hui?";
-                        }
+                        reply = "Salut mon ami! Bienvenue à Paris. On peut aller prendre un café au Marais et ensuite se promener près de la Tour Eiffel. Qu'en penses-tu?";
                     } else {
                         reply = "Molto bene! È un piacere conversare con te. Di cosa vorresti parlare adesso?";
                     }
@@ -1033,7 +1239,7 @@
                         this.radarChart = new Chart(radarCtx, {
                             type: 'radar',
                             data: {
-                                labels: ['Escuta', 'Fala', 'Leitura', 'Escrita'],
+                                labels: ['Ascolto', 'Parlato', 'Lettura', 'Scrittura'],
                                 datasets: [{
                                     data: [sk.listening, sk.speaking, sk.reading, sk.writing],
                                     backgroundColor: 'rgba(59, 130, 246, 0.25)',
@@ -1065,7 +1271,7 @@
                         this.barChart = new Chart(barCtx, {
                             type: 'bar',
                             data: {
-                                labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                                labels: ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'],
                                 datasets: [{
                                     data: [0, 0, 0, 0, 0, 0, mins],
                                     backgroundColor: '#3b82f6',
