@@ -636,9 +636,16 @@
                                 </div>
                             </template>
 
-                            <button @click="nextQuestion()" class="px-6 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-extrabold text-xs transition shadow hover:opacity-90">
-                                <span x-text="t('nextQuestion')"></span> <i class="fa-solid fa-arrow-right ml-1"></i>
-                            </button>
+                            <template x-if="isCorrectAnswer">
+                                <button @click="nextQuestion()" class="px-6 py-2.5 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-extrabold text-xs transition shadow hover:opacity-90">
+                                    <span x-text="t('nextQuestion')"></span> <i class="fa-solid fa-arrow-right ml-1"></i>
+                                </button>
+                            </template>
+                            <template x-if="!isCorrectAnswer">
+                                <button @click="retryQuestion()" class="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs transition shadow flex items-center gap-2">
+                                    <i class="fa-solid fa-rotate-left"></i> <span x-text="t('tryAgain')"></span>
+                                </button>
+                            </template>
                         </div>
 
                     </div>
@@ -722,7 +729,7 @@
                         readingTextHeader: "Testo per la Lettura e L'Analisi", yourWrittenAnswer: "La tua risposta scritta:",
                         writingPlaceholder: "Scrivi la frase o il testo completo qui...", verifyAnswer: "Verifica Risposta",
                         correctFeedback: "Risposta Perfetta! +15 XP", incorrectFeedback: "Non è corretto.", expectedAnswer: "Risposta Attesa:",
-                        nextQuestion: "Prossima Domanda", moduleCompleted: "Modulo Completato!",
+                        nextQuestion: "Prossima Domanda", tryAgain: "Correggi e Riprova Ora", moduleCompleted: "Modulo Completato!",
                         moduleCompletedSub: "Ottimo lavoro! Hai completato questo set di esercizi di immersione.",
                         loadMoreExercises: "Carica Altri 20 Esercizi", examPassedTitle: "🎉 Esame CEFR Superato con Successo!",
                         examFailedTitle: "❌ Esame Non Superato (Punteggio Minimo: 80%)",
@@ -751,7 +758,7 @@
                         readingTextHeader: "Texto de Lectura y Análisis", yourWrittenAnswer: "Tu respuesta escrita:",
                         writingPlaceholder: "Escribe la frase o texto completo aquí...", verifyAnswer: "Verificar Respuesta",
                         correctFeedback: "¡Respuesta Perfecta! +15 XP", incorrectFeedback: "Aún no es correcto.", expectedAnswer: "Respuesta Esperada:",
-                        nextQuestion: "Siguiente Pregunta", moduleCompleted: "¡Módulo Completado!",
+                        nextQuestion: "Siguiente Pregunta", tryAgain: "Corregir y Reintentar Ahora", moduleCompleted: "¡Módulo Completado!",
                         moduleCompletedSub: "¡Excelente trabajo! Has completado este set de ejercicios de inmersión.",
                         loadMoreExercises: "Cargar Más Ejercicios", examPassedTitle: "🎉 ¡Examen CEFR Aprobado con Éxito!",
                         examFailedTitle: "❌ Examen No Aprobado (Puntaje Mínimo: 80%)",
@@ -780,7 +787,7 @@
                         readingTextHeader: "Texte pour Lecture et Analyse", yourWrittenAnswer: "Votre réponse écrite:",
                         writingPlaceholder: "Écrivez la phrase ou le texte complet ici...", verifyAnswer: "Vérifier la Réponse",
                         correctFeedback: "Réponse Parfaite! +15 XP", incorrectFeedback: "Ce n'est pas encore correct.", expectedAnswer: "Réponse Attendue:",
-                        nextQuestion: "Question Suivante", moduleCompleted: "Module Terminé!",
+                        nextQuestion: "Question Suivante", tryAgain: "Corriger et Réessayer", moduleCompleted: "Module Terminé!",
                         moduleCompletedSub: "Excellent travail! Vous avez terminé cette série d'exercices d'immersion.",
                         loadMoreExercises: "Charger Plus d'Exercices", examPassedTitle: "🎉 Examen CECRL Réussi avec Succès!",
                         examFailedTitle: "❌ Examen Non Réussi (Score Minimum: 80%)",
@@ -1042,6 +1049,11 @@
                     if (q && idx === q.correct) return 'border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold';
                     if (this.selectedOptionIdx === idx) return 'border-rose-500 bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold';
                     return 'border-slate-300 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-900/30 opacity-50 text-slate-800 dark:text-slate-100';
+                },
+
+                retryQuestion() {
+                    this.selectedOptionIdx = null;
+                    this.writingSubmitted = false;
                 },
 
                 nextQuestion() {
